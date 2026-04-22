@@ -1,0 +1,611 @@
+:root {
+  --black: #000000;
+  --white: #ffffff;
+  --soft: rgba(0, 0, 0, 0.05);
+  --line: rgba(0, 0, 0, 0.1);
+  --muted: rgba(0, 0, 0, 0.7);
+  --faint: rgba(0, 0, 0, 0.45);
+  --radius-lg: 32px;
+  --radius-md: 28px;
+  --radius-sm: 16px;
+}
+
+* {
+  box-sizing: border-box;
+}
+
+html {
+  scroll-behavior: smooth;
+}
+
+body {
+  margin: 0;
+  min-height: 100vh;
+  color: var(--black);
+  background: var(--white);
+  font-family: "Inter", system-ui, sans-serif;
+}
+
+button,
+input {
+  font: inherit;
+}
+
+a {
+  color: inherit;
+}
+
+.site-shell {
+  min-height: 100vh;
+}
+
+.container {
+  width: min(100% - 48px, 1152px);
+  margin: 0 auto;
+}
+
+.hero-section {
+  border-bottom: 1px solid var(--line);
+}
+
+.top-nav {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  width: min(100% - 48px, 1152px);
+  min-height: 72px;
+  margin: 0 auto;
+  border-bottom: 1px solid var(--line);
+}
+
+.nav-brand {
+  font-size: 1.05rem;
+  font-weight: 700;
+  letter-spacing: -0.02em;
+  text-decoration: none;
+}
+
+.nav-links {
+  display: flex;
+  align-items: center;
+  gap: 28px;
+}
+
+.nav-links a {
+  color: rgba(0, 0, 0, 0.62);
+  font-size: 0.95rem;
+  font-weight: 500;
+  text-decoration: none;
+  transition: color 160ms ease;
+}
+
+.nav-links a:hover {
+  color: var(--black);
+}
+
+.nav-cta {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  min-height: 38px;
+  border-radius: 999px;
+  padding: 0 16px;
+  color: var(--white);
+  background: var(--black);
+  font-size: 0.9rem;
+  font-weight: 600;
+  text-decoration: none;
+}
+
+.hero-grid {
+  display: grid;
+  grid-template-columns: 1fr;
+  gap: 48px;
+  align-items: center;
+  padding-top: 80px;
+  padding-bottom: 80px;
+}
+
+.pill {
+  display: inline-flex;
+  margin-bottom: 16px;
+  border: 1px solid var(--line);
+  border-radius: 999px;
+  padding: 4px 16px;
+  color: var(--muted);
+  font-size: 0.9rem;
+  letter-spacing: 0.02em;
+}
+
+h1,
+h2,
+h3,
+p {
+  margin: 0;
+}
+
+.hero-copy h1 {
+  max-width: 640px;
+  font-size: clamp(3.25rem, 7vw, 3.75rem);
+  font-weight: 600;
+  line-height: 1.08;
+  letter-spacing: -0.04em;
+}
+
+.hero-copy p {
+  max-width: 620px;
+  margin-top: 24px;
+  color: var(--muted);
+  font-size: 1.125rem;
+  line-height: 1.78;
+}
+
+.hero-actions {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 16px;
+  margin-top: 32px;
+}
+
+.button {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  min-height: 48px;
+  border-radius: var(--radius-sm);
+  padding: 0 24px;
+  font-size: 1rem;
+  font-weight: 500;
+  text-decoration: none;
+  transition: transform 160ms ease, background 160ms ease;
+}
+
+.button:hover,
+.workout-row button:hover,
+.waitlist-form button:hover {
+  transform: scale(1.01);
+}
+
+.button-dark {
+  color: var(--white);
+  background: var(--black);
+  box-shadow: 0 1px 2px rgba(0, 0, 0, 0.05);
+}
+
+.button-light {
+  border: 1px solid rgba(0, 0, 0, 0.15);
+  color: var(--black);
+  background: var(--white);
+}
+
+.button-light:hover {
+  background: var(--soft);
+}
+
+.trust-row {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 24px;
+  margin-top: 32px;
+  color: rgba(0, 0, 0, 0.6);
+  font-size: 0.9rem;
+}
+
+.app-shell {
+  border: 1px solid var(--line);
+  border-radius: var(--radius-lg);
+  padding: 12px;
+  background: var(--black);
+  box-shadow: 0 25px 50px -12px rgba(0, 0, 0, 0.25);
+}
+
+.app-card {
+  border-radius: 24px;
+  padding: 24px;
+  background: var(--white);
+}
+
+.plan-header,
+.workout-row,
+.demo-timer,
+.how-grid,
+.steps-list article {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 16px;
+}
+
+.plan-header p,
+.why-card p,
+.audience-grid p {
+  color: rgba(0, 0, 0, 0.5);
+  font-size: 0.9rem;
+}
+
+.plan-header h2 {
+  margin-top: 4px;
+  font-size: 1.5rem;
+  font-weight: 600;
+}
+
+.duration-badge {
+  flex: 0 0 auto;
+  border-radius: 999px;
+  padding: 4px 12px;
+  color: var(--white);
+  background: var(--black);
+  font-size: 0.9rem;
+}
+
+.workout-list {
+  display: grid;
+  gap: 12px;
+  margin-top: 24px;
+}
+
+.workout-row {
+  min-height: 62px;
+  border: 1px solid var(--line);
+  border-radius: var(--radius-sm);
+  padding: 12px 16px;
+  transition: border-color 160ms ease, background 160ms ease;
+}
+
+.workout-row.active {
+  border-color: rgba(0, 0, 0, 0.32);
+  background: rgba(0, 0, 0, 0.03);
+}
+
+.workout-row span {
+  font-weight: 500;
+}
+
+.workout-row button {
+  border: 0;
+  border-radius: var(--radius-sm);
+  padding: 10px 20px;
+  color: var(--white);
+  background: var(--black);
+  box-shadow: 0 4px 10px rgba(0, 0, 0, 0.18);
+  font-size: 1rem;
+  font-weight: 600;
+  cursor: pointer;
+  transition: transform 160ms ease;
+}
+
+.demo-readout,
+.why-card {
+  margin-top: 24px;
+  border-radius: var(--radius-sm);
+  background: var(--soft);
+}
+
+.demo-readout {
+  padding: 16px;
+}
+
+.demo-timer span {
+  color: rgba(0, 0, 0, 0.62);
+  font-size: 0.95rem;
+}
+
+.demo-timer strong {
+  font-size: 1.25rem;
+  font-weight: 600;
+}
+
+.progress-track {
+  height: 8px;
+  margin-top: 12px;
+  overflow: hidden;
+  border-radius: 999px;
+  background: rgba(0, 0, 0, 0.1);
+}
+
+.progress-track span {
+  display: block;
+  width: 0%;
+  height: 100%;
+  border-radius: inherit;
+  background: var(--black);
+  transition: width 240ms ease;
+}
+
+.why-card {
+  padding: 16px;
+}
+
+.why-card span {
+  display: block;
+  margin-top: 8px;
+  color: rgba(0, 0, 0, 0.8);
+  font-size: 0.9rem;
+  line-height: 1.75;
+}
+
+.features-section,
+.audience-section {
+  padding-top: 80px;
+  padding-bottom: 80px;
+}
+
+.section-intro {
+  max-width: 720px;
+}
+
+.section-intro p,
+.section-label {
+  color: var(--faint);
+  font-size: 0.875rem;
+  letter-spacing: 0.2em;
+  text-transform: uppercase;
+}
+
+.section-intro h2,
+.how-grid h2,
+.waitlist-card h2 {
+  margin-top: 12px;
+  font-size: clamp(2rem, 5vw, 2.5rem);
+  font-weight: 600;
+  line-height: 1.18;
+  letter-spacing: -0.035em;
+}
+
+.feature-grid {
+  display: grid;
+  gap: 24px;
+  margin-top: 40px;
+}
+
+.feature-grid article {
+  border: 1px solid var(--line);
+  border-radius: var(--radius-md);
+  padding: 28px;
+  box-shadow: 0 1px 2px rgba(0, 0, 0, 0.05);
+}
+
+.feature-grid h3 {
+  font-size: 1.25rem;
+  font-weight: 600;
+}
+
+.feature-grid p,
+.audience-grid span {
+  display: block;
+  margin-top: 12px;
+  color: var(--muted);
+  line-height: 1.75;
+}
+
+.how-section {
+  border-top: 1px solid var(--line);
+  border-bottom: 1px solid var(--line);
+  color: var(--white);
+  background: var(--black);
+}
+
+.how-grid {
+  align-items: center;
+  padding-top: 80px;
+  padding-bottom: 80px;
+}
+
+.how-grid > div:first-child {
+  max-width: 540px;
+}
+
+.how-section .section-label {
+  color: rgba(255, 255, 255, 0.6);
+}
+
+.steps-list {
+  display: grid;
+  justify-content: stretch;
+  gap: 16px;
+}
+
+.steps-list article {
+  justify-content: flex-start;
+  border: 1px solid rgba(255, 255, 255, 0.1);
+  border-radius: var(--radius-sm);
+  padding: 20px;
+}
+
+.steps-list span {
+  display: grid;
+  flex: 0 0 36px;
+  place-items: center;
+  width: 36px;
+  height: 36px;
+  border-radius: 999px;
+  color: var(--black);
+  background: var(--white);
+  font-size: 0.875rem;
+  font-weight: 600;
+}
+
+.steps-list p {
+  padding-top: 2px;
+  color: rgba(255, 255, 255, 0.85);
+}
+
+.audience-grid {
+  display: grid;
+  gap: 24px;
+}
+
+.audience-grid article {
+  border-radius: var(--radius-md);
+  padding: 28px;
+  background: var(--soft);
+}
+
+.audience-grid h3 {
+  margin-top: 8px;
+  font-size: 1.5rem;
+  font-weight: 600;
+}
+
+.waitlist-section {
+  padding: 0 24px 80px;
+}
+
+.waitlist-card {
+  width: min(100%, 896px);
+  margin: 0 auto;
+  border-radius: var(--radius-lg);
+  padding: 48px 32px;
+  color: var(--white);
+  background: var(--black);
+  box-shadow: 0 25px 50px -12px rgba(0, 0, 0, 0.25);
+}
+
+.waitlist-card .section-label {
+  color: rgba(255, 255, 255, 0.6);
+}
+
+.waitlist-card > p:not(.section-label) {
+  max-width: 680px;
+  margin-top: 16px;
+  color: rgba(255, 255, 255, 0.75);
+  line-height: 1.75;
+}
+
+.waitlist-form {
+  display: flex;
+  flex-direction: column;
+  gap: 16px;
+  margin-top: 32px;
+}
+
+.waitlist-form input {
+  width: 100%;
+  min-height: 50px;
+  border: 1px solid rgba(255, 255, 255, 0.15);
+  border-radius: var(--radius-sm);
+  padding: 0 20px;
+  color: var(--black);
+  background: var(--white);
+  outline: none;
+}
+
+.waitlist-form input::placeholder {
+  color: rgba(0, 0, 0, 0.4);
+}
+
+.waitlist-form button {
+  min-height: 50px;
+  border: 0;
+  border-radius: var(--radius-sm);
+  padding: 0 24px;
+  color: var(--black);
+  background: var(--white);
+  font-weight: 500;
+  cursor: pointer;
+  transition: transform 160ms ease;
+}
+
+.form-status {
+  min-height: 24px;
+  margin-top: 14px;
+  color: rgba(255, 255, 255, 0.72);
+}
+
+@media (min-width: 768px) {
+  .container {
+    width: min(100% - 80px, 1152px);
+  }
+
+  .top-nav {
+    width: min(100% - 80px, 1152px);
+  }
+
+  .hero-grid {
+    padding-top: 112px;
+    padding-bottom: 112px;
+  }
+
+  .feature-grid {
+    grid-template-columns: repeat(2, 1fr);
+  }
+
+  .audience-grid {
+    grid-template-columns: repeat(3, 1fr);
+  }
+
+  .waitlist-card {
+    padding: 48px;
+  }
+
+  .waitlist-form {
+    flex-direction: row;
+  }
+
+  .waitlist-form button {
+    flex: 0 0 auto;
+  }
+}
+
+@media (min-width: 1024px) {
+  .hero-grid {
+    grid-template-columns: repeat(2, minmax(0, 1fr));
+  }
+
+  .how-grid {
+    grid-template-columns: 1.1fr 0.9fr;
+    gap: 40px;
+  }
+}
+
+@media (max-width: 560px) {
+  .container {
+    width: min(100% - 32px, 1152px);
+  }
+
+  .top-nav {
+    width: min(100% - 32px, 1152px);
+    gap: 18px;
+  }
+
+  .nav-links {
+    flex: 1;
+    justify-content: flex-end;
+    gap: 14px;
+  }
+
+  .nav-links a {
+    font-size: 0.88rem;
+  }
+
+  .nav-cta {
+    display: none;
+  }
+
+  .hero-grid,
+  .features-section,
+  .how-grid,
+  .audience-section {
+    padding-top: 56px;
+    padding-bottom: 56px;
+  }
+
+  .hero-copy h1 {
+    font-size: 2.9rem;
+  }
+
+  .button,
+  .hero-actions,
+  .waitlist-form button {
+    width: 100%;
+  }
+
+  .workout-row {
+    align-items: stretch;
+    flex-direction: column;
+  }
+
+  .workout-row button {
+    width: 100%;
+  }
+}

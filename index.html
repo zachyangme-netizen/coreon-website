@@ -1,0 +1,220 @@
+<!DOCTYPE html>
+<html lang="en">
+  <head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <title>Coreon | Strength for Runners</title>
+    <meta
+      name="description"
+      content="Coreon helps runners build strength and recovery into their week with clear workouts that feel simple enough to do even on tired days."
+    />
+    <link rel="preconnect" href="https://fonts.googleapis.com" />
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
+    <link
+      href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&display=swap"
+      rel="stylesheet"
+    />
+    <link rel="stylesheet" href="styles.css" />
+  </head>
+  <body>
+    <main class="site-shell">
+      <section class="hero-section">
+        <header class="top-nav">
+          <a class="nav-brand" href="#" aria-label="Coreon home">Coreon</a>
+          <nav class="nav-links" aria-label="Primary navigation">
+            <a href="#features">Features</a>
+            <a href="#how">How it works</a>
+            <a href="#waitlist">Waitlist</a>
+          </nav>
+          <a class="nav-cta" href="#waitlist">Join</a>
+        </header>
+        <div class="container hero-grid">
+          <div class="hero-copy">
+            <div class="pill">Coreon · strength for runners</div>
+            <h1>Make strength training actually stick for runners.</h1>
+            <p>
+              Coreon helps runners build strength and recovery into their week
+              with clear workouts that feel simple enough to do even on tired
+              days.
+            </p>
+            <div class="hero-actions">
+              <a class="button button-dark" href="#waitlist">Join waitlist</a>
+              <a class="button button-light" href="#features">Explore features</a>
+            </div>
+            <div class="trust-row" aria-label="Coreon attributes">
+              <span>AI-assisted</span>
+              <span>Runner-focused</span>
+              <span>Recovery-aware</span>
+            </div>
+          </div>
+
+          <div class="app-shell" aria-label="Coreon workout demo">
+            <div class="app-card">
+              <div class="plan-header">
+                <div>
+                  <p>Today’s plan</p>
+                  <h2 id="plan-title">Post-run reset</h2>
+                </div>
+                <div class="duration-badge" id="duration-badge">24 min</div>
+              </div>
+
+              <div class="workout-list" id="workout-list">
+                <div class="workout-row active" data-index="0">
+                  <span>Hip flexor stretch</span>
+                  <button type="button">Start</button>
+                </div>
+                <div class="workout-row" data-index="1">
+                  <span>Glute bridge hold</span>
+                  <button type="button">Start</button>
+                </div>
+                <div class="workout-row" data-index="2">
+                  <span>Single-leg RDL</span>
+                  <button type="button">Start</button>
+                </div>
+                <div class="workout-row" data-index="3">
+                  <span>Dead bug</span>
+                  <button type="button">Start</button>
+                </div>
+                <div class="workout-row" data-index="4">
+                  <span>Child’s pose reset</span>
+                  <button type="button">Start</button>
+                </div>
+              </div>
+
+              <div class="demo-readout">
+                <div class="demo-timer">
+                  <span id="active-label">Hip flexor stretch</span>
+                  <strong id="timer">02:00</strong>
+                </div>
+                <div class="progress-track" aria-label="Demo progress">
+                  <span id="progress-bar"></span>
+                </div>
+              </div>
+
+              <div class="why-card">
+                <p>Why today looks like this</p>
+                <span id="why-text">
+                  You had a long run yesterday, so Coreon shifted today toward
+                  mobility, core stability, and lower fatigue work.
+                </span>
+              </div>
+            </div>
+          </div>
+        </div>
+      </section>
+
+      <section id="features" class="container features-section">
+        <div class="section-intro">
+          <p>Features</p>
+          <h2>
+            Designed for runners who know strength matters, but struggle to do
+            it consistently.
+          </h2>
+        </div>
+
+        <div class="feature-grid">
+          <article>
+            <h3>Strength plans for runners</h3>
+            <p>
+              Simple strength sessions designed to support running performance,
+              durability, and consistency.
+            </p>
+          </article>
+          <article>
+            <h3>Adaptive weekly flow</h3>
+            <p>
+              Workouts adjust to your training week so strength fits around long
+              runs, recovery days, and busy schedules.
+            </p>
+          </article>
+          <article>
+            <h3>Stretch + mobility guidance</h3>
+            <p>
+              Recovery-focused routines for tired days, with clear structure so
+              users know exactly what to do.
+            </p>
+          </article>
+          <article>
+            <h3>Built for consistency</h3>
+            <p>
+              Low-friction experience focused on showing up, not overthinking.
+              Open the app, get the workout, and move.
+            </p>
+          </article>
+        </div>
+      </section>
+
+      <section id="how" class="how-section">
+        <div class="container how-grid">
+          <div>
+            <p class="section-label">How it works</p>
+            <h2>Less planning. More showing up.</h2>
+          </div>
+          <div class="steps-list">
+            <article>
+              <span>1</span>
+              <p>Tell Coreon your running schedule and goals</p>
+            </article>
+            <article>
+              <span>2</span>
+              <p>Get a smart weekly strength + recovery plan</p>
+            </article>
+            <article>
+              <span>3</span>
+              <p>Follow quick sessions that actually fit your life</p>
+            </article>
+          </div>
+        </div>
+      </section>
+
+      <section class="container audience-section">
+        <div class="audience-grid">
+          <article>
+            <p>For beginners</p>
+            <h3>No more guesswork</h3>
+            <span>Clear structure, approachable workouts, and less mental load.</span>
+          </article>
+          <article>
+            <p>For busy runners</p>
+            <h3>Built around real life</h3>
+            <span>Sessions that work on high-energy days and tired days alike.</span>
+          </article>
+          <article>
+            <p>For long-term progress</p>
+            <h3>Train with intention</h3>
+            <span>
+              Support performance, reduce friction, and stay more consistent
+              over time.
+            </span>
+          </article>
+        </div>
+      </section>
+
+      <section id="waitlist" class="waitlist-section">
+        <div class="waitlist-card">
+          <p class="section-label">Early access</p>
+          <h2>Join Coreon and build a stronger running routine.</h2>
+          <p>
+            Be the first to try runner strength and recovery plans built to make
+            consistency easier.
+          </p>
+
+          <form id="waitlist-form" class="waitlist-form">
+            <input
+              id="email"
+              name="email"
+              type="email"
+              autocomplete="email"
+              placeholder="Enter your email"
+              required
+            />
+            <button type="submit">Join waitlist</button>
+          </form>
+          <div id="form-status" class="form-status" role="status" aria-live="polite"></div>
+        </div>
+      </section>
+    </main>
+
+    <script src="script.js"></script>
+  </body>
+</html>
