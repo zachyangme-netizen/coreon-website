@@ -212,7 +212,6 @@ p {
 .plan-header,
 .workout-row,
 .demo-timer,
-.how-grid,
 .steps-list article {
   display: flex;
   align-items: center;
@@ -390,6 +389,8 @@ p {
 }
 
 .how-grid {
+  display: grid;
+  gap: 40px;
   align-items: center;
   padding-top: 80px;
   padding-bottom: 80px;
@@ -558,7 +559,6 @@ p {
 
   .how-grid {
     grid-template-columns: 1.1fr 0.9fr;
-    gap: 40px;
   }
 }
 
@@ -588,10 +588,19 @@ p {
 
   .hero-grid,
   .features-section,
-  .how-grid,
   .audience-section {
     padding-top: 40px;
     padding-bottom: 44px;
+  }
+
+  .how-grid {
+    gap: 28px;
+    padding-top: 44px;
+    padding-bottom: 48px;
+  }
+
+  .how-grid > div:first-child {
+    max-width: none;
   }
 
   .hero-grid {
