@@ -111,11 +111,12 @@ async function fetchWorkout() {
   appShell.classList.add("loading");
   refreshBtn.disabled = true;
   try {
-    const res = await fetch("/api/workout");
-    if (!res.ok) throw new Error(`HTTP ${res.status}`);
-    const workout = await res.json();
-    loadWorkout(workout);
-  } catch {
+    const res = await fetch(`/api/workout?t=${Date.now()}`);
+    const data = await res.json();
+    if (!res.ok) throw new Error(data.error || `HTTP ${res.status}`);
+    loadWorkout(data);
+  } catch (err) {
+    console.error("fetchWorkout failed:", err.message);
     loadWorkout(FALLBACK_WORKOUT);
   } finally {
     appShell.classList.remove("loading");

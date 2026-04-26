@@ -51,10 +51,11 @@ export default async function handler(req, res) {
     const text = response.content[0].text;
     const jsonMatch = text.match(/\{[\s\S]*\}/);
     const workout = JSON.parse(jsonMatch ? jsonMatch[0] : text);
-    res.setHeader("Cache-Control", "no-store");
+    res.setHeader("Cache-Control", "no-store, no-cache, must-revalidate");
+    res.setHeader("Pragma", "no-cache");
     res.status(200).json(workout);
   } catch (err) {
-    console.error("Workout generation failed:", err);
-    res.status(200).json(FALLBACK);
+    console.error("Workout generation failed:", err.message);
+    res.status(500).json({ error: err.message });
   }
 }
