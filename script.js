@@ -1,21 +1,31 @@
-const exercises = [
-  { name: "Hip flexor stretch", seconds: 120 },
-  { name: "Glute bridge hold", seconds: 90 },
-  { name: "Single-leg RDL", seconds: 150 },
-  { name: "Dead bug", seconds: 120 },
-  { name: "Child’s pose reset", seconds: 90 },
-];
+const FALLBACK_WORKOUT = {
+  title: "Post-run reset",
+  duration: "24 min",
+  exercises: [
+    { name: "Hip flexor stretch", seconds: 120 },
+    { name: "Glute bridge hold", seconds: 90 },
+    { name: "Single-leg RDL", seconds: 150 },
+    { name: "Dead bug", seconds: 120 },
+    { name: "Child's pose reset", seconds: 90 },
+  ],
+  why: "You had a long run yesterday, so Coreon shifted today toward mobility, core stability, and lower fatigue work.",
+};
 
-const rows = document.querySelectorAll(".workout-row");
+let exercises = [];
+let activeIndex = 0;
+let remaining = 0;
+let intervalId;
+
 const activeLabel = document.getElementById("active-label");
-const timer = document.getElementById("timer");
+const timerEl = document.getElementById("timer");
 const progressBar = document.getElementById("progress-bar");
+const workoutList = document.getElementById("workout-list");
+const planTitle = document.getElementById("plan-title");
+const durationBadge = document.getElementById("duration-badge");
+const whyText = document.getElementById("why-text");
 const waitlistForm = document.getElementById("waitlist-form");
 const formStatus = document.getElementById("form-status");
-
-let activeIndex = 0;
-let remaining = exercises[activeIndex].seconds;
-let intervalId;
+const appShell = document.querySelector(".app-shell");
 
 function formatTime(totalSeconds) {
   const minutes = String(Math.floor(totalSeconds / 60)).padStart(2, "0");
@@ -23,16 +33,41 @@ function formatTime(totalSeconds) {
   return `${minutes}:${seconds}`;
 }
 
+function buildWorkoutRows() {
+  workoutList.innerHTML = exercises
+    .map(
+      (ex, i) =>
+        `<div class="workout-row${i === 0 ? " active" : ""}" data-index="${i}">` +
+        `<span>${ex.name}</span>` +
+        `<button type="button">Start</button>` +
+        `</div>`
+    )
+    .join("");
+
+  workoutList.querySelectorAll(".workout-row").forEach((row, index) => {
+    row.querySelector("button").addEventListener("click", () => {
+      if (activeIndex === index && intervalId) {
+        stopDemo();
+        return;
+      }
+      activeIndex = index;
+      remaining = exercises[activeIndex].seconds;
+      startDemo();
+    });
+  });
+}
+
 function renderDemo() {
+  if (!exercises.length) return;
   const exercise = exercises[activeIndex];
   const elapsed = exercise.seconds - remaining;
   const progress = Math.round((elapsed / exercise.seconds) * 100);
 
   activeLabel.textContent = exercise.name;
-  timer.textContent = formatTime(remaining);
+  timerEl.textContent = formatTime(remaining);
   progressBar.style.width = `${Math.max(0, Math.min(progress, 100))}%`;
 
-  rows.forEach((row, index) => {
+  workoutList.querySelectorAll(".workout-row").forEach((row, index) => {
     const button = row.querySelector("button");
     row.classList.toggle("active", index === activeIndex);
     button.textContent = index === activeIndex && intervalId ? "Pause" : "Start";
@@ -53,25 +88,36 @@ function startDemo() {
       stopDemo();
       return;
     }
-
     remaining -= 1;
     renderDemo();
   }, 1000);
   renderDemo();
 }
 
-rows.forEach((row, index) => {
-  row.querySelector("button").addEventListener("click", () => {
-    if (activeIndex === index && intervalId) {
-      stopDemo();
-      return;
-    }
+function loadWorkout(workout) {
+  exercises = workout.exercises;
+  planTitle.textContent = workout.title;
+  durationBadge.textContent = workout.duration;
+  whyText.textContent = workout.why;
+  activeIndex = 0;
+  remaining = exercises[0].seconds;
+  buildWorkoutRows();
+  renderDemo();
+}
 
-    activeIndex = index;
-    remaining = exercises[activeIndex].seconds;
-    startDemo();
-  });
-});
+async function fetchWorkout() {
+  appShell.classList.add("loading");
+  try {
+    const res = await fetch("/api/workout");
+    if (!res.ok) throw new Error(`HTTP ${res.status}`);
+    const workout = await res.json();
+    loadWorkout(workout);
+  } catch {
+    loadWorkout(FALLBACK_WORKOUT);
+  } finally {
+    appShell.classList.remove("loading");
+  }
+}
 
 waitlistForm.addEventListener("submit", (event) => {
   event.preventDefault();
@@ -80,4 +126,4 @@ waitlistForm.addEventListener("submit", (event) => {
   waitlistForm.reset();
 });
 
-renderDemo();
+fetchWorkout();

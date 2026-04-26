@@ -558,6 +558,12 @@ p {
   }
 }
 
+.app-shell.loading .app-card {
+  opacity: 0.45;
+  pointer-events: none;
+  transition: opacity 200ms ease;
+}
+
 @media (max-width: 560px) {
   .container {
     width: min(100% - 32px, 1152px);
