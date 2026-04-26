@@ -558,6 +558,39 @@ p {
   }
 }
 
+.plan-header-right {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+}
+
+#refresh-btn {
+  display: grid;
+  place-items: center;
+  width: 32px;
+  height: 32px;
+  border: 1px solid var(--line);
+  border-radius: 999px;
+  background: transparent;
+  color: var(--black);
+  font-size: 1rem;
+  cursor: pointer;
+  transition: background 160ms ease, transform 400ms ease;
+}
+
+#refresh-btn:hover {
+  background: var(--soft);
+}
+
+#refresh-btn:disabled {
+  opacity: 0.35;
+  cursor: not-allowed;
+}
+
+.app-shell.loading #refresh-btn {
+  transform: rotate(360deg);
+}
+
 .app-shell.loading .app-card {
   opacity: 0.45;
   pointer-events: none;

@@ -26,6 +26,7 @@ const whyText = document.getElementById("why-text");
 const waitlistForm = document.getElementById("waitlist-form");
 const formStatus = document.getElementById("form-status");
 const appShell = document.querySelector(".app-shell");
+const refreshBtn = document.getElementById("refresh-btn");
 
 function formatTime(totalSeconds) {
   const minutes = String(Math.floor(totalSeconds / 60)).padStart(2, "0");
@@ -107,6 +108,7 @@ function loadWorkout(workout) {
 
 async function fetchWorkout() {
   appShell.classList.add("loading");
+  refreshBtn.disabled = true;
   try {
     const res = await fetch("/api/workout");
     if (!res.ok) throw new Error(`HTTP ${res.status}`);
@@ -116,8 +118,11 @@ async function fetchWorkout() {
     loadWorkout(FALLBACK_WORKOUT);
   } finally {
     appShell.classList.remove("loading");
+    refreshBtn.disabled = false;
   }
 }
+
+refreshBtn.addEventListener("click", fetchWorkout);
 
 waitlistForm.addEventListener("submit", (event) => {
   event.preventDefault();
