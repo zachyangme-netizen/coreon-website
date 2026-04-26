@@ -96,6 +96,7 @@ function startDemo() {
 }
 
 function loadWorkout(workout) {
+  stopDemo();
   exercises = workout.exercises;
   planTitle.textContent = workout.title;
   durationBadge.textContent = workout.duration;

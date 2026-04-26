@@ -48,7 +48,9 @@ export default async function handler(req, res) {
       messages: [{ role: "user", content: "Generate a workout for today." }],
     });
 
-    const workout = JSON.parse(response.content[0].text);
+    const text = response.content[0].text;
+    const jsonMatch = text.match(/\{[\s\S]*\}/);
+    const workout = JSON.parse(jsonMatch ? jsonMatch[0] : text);
     res.setHeader("Cache-Control", "no-store");
     res.status(200).json(workout);
   } catch (err) {
