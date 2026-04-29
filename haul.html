@@ -1,0 +1,690 @@
+<!DOCTYPE html>
+<html lang="en">
+  <head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <title>Coreon Haul | Grocery for Runners</title>
+    <meta
+      name="description"
+      content="A weekly grocery list that thinks for runners. Tell Coreon your goal and stats; we'll tell you exactly what to buy to hit it."
+    />
+    <link rel="preconnect" href="https://fonts.googleapis.com" />
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
+    <link
+      href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&display=swap"
+      rel="stylesheet"
+    />
+    <link rel="stylesheet" href="styles.css" />
+  </head>
+  <body>
+    <main class="site-shell">
+      <section class="haul-page">
+        <header class="top-nav">
+          <a class="nav-brand" href="index.html" aria-label="Coreon home">Coreon</a>
+          <nav class="nav-links" aria-label="Primary navigation">
+            <a class="nav-link-haul nav-link-active" href="haul.html" aria-current="page">Haul<span class="nav-badge">New</span></a>
+            <a href="index.html#tools">Tools</a>
+            <a href="index.html#how">How it works</a>
+          </nav>
+        </header>
+
+        <div class="container haul-container">
+          <div class="haul-step-indicator" aria-label="Wizard progress">
+            <p class="section-label" id="step-label">Step 1 of 4 · Goal</p>
+            <div class="progress-track" aria-hidden="true">
+              <span id="step-progress" style="width: 25%"></span>
+            </div>
+          </div>
+
+          <section class="haul-step" data-step="goal" id="step-goal">
+            <div class="haul-intro">
+              <div class="pill">Coreon Haul · grocery for runners</div>
+              <h1>What are you eating for?</h1>
+              <p>
+                Pick the goal that fits this season. Coreon will build a weekly
+                grocery haul that gets you there without sabotaging your runs.
+              </p>
+            </div>
+
+            <div class="haul-goal-grid" role="radiogroup" aria-label="Choose a goal">
+              <button
+                type="button"
+                class="haul-goal-card"
+                data-goal="lose-fat"
+                role="radio"
+                aria-checked="false"
+              >
+                <p class="goal-tag">Lose fat</p>
+                <h3>Drop weight without losing your edge</h3>
+                <span>
+                  A small calorie deficit. Carbs preserved on hard days. Protein
+                  kept high so you don't lose muscle while you train.
+                </span>
+              </button>
+
+              <button
+                type="button"
+                class="haul-goal-card"
+                data-goal="gain-muscle"
+                role="radio"
+                aria-checked="false"
+              >
+                <p class="goal-tag">Gain muscle</p>
+                <h3>Add strength without bloating</h3>
+                <span>
+                  A controlled surplus and a high-protein cart, built to support
+                  running durability — not to make you slow.
+                </span>
+              </button>
+
+              <button
+                type="button"
+                class="haul-goal-card haul-goal-card-recommended"
+                data-goal="fuel-performance"
+                role="radio"
+                aria-checked="false"
+              >
+                <span class="haul-recommended-tag" aria-hidden="true">Recommended</span>
+                <p class="goal-tag">Fuel performance</p>
+                <h3>Eat enough to train and recover</h3>
+                <span>
+                  No deficit. Carbs scale with your mileage. The default for
+                  most runners chasing a race or PR.
+                </span>
+              </button>
+            </div>
+
+            <div class="haul-actions">
+              <button
+                type="button"
+                class="button button-dark haul-continue"
+                id="continue-btn"
+                disabled
+                aria-disabled="true"
+              >
+                Continue
+              </button>
+              <p class="haul-helper" id="continue-helper">Pick a goal to continue.</p>
+            </div>
+          </section>
+
+          <section class="haul-step" data-step="stats" id="step-stats" hidden>
+            <div class="haul-intro">
+              <div class="pill">Coreon Haul · about you</div>
+              <h1>Tell us about you.</h1>
+              <p>
+                Just enough to set your calorie target. Your stats stay in
+                your browser until you generate a haul.
+              </p>
+              <div class="haul-context" id="stats-context">
+                <span class="haul-context-label">Goal</span>
+                <span class="haul-context-value" id="stats-goal-summary">Not set</span>
+                <a class="haul-context-edit" href="#goal">Change</a>
+              </div>
+            </div>
+
+            <form class="haul-form" id="stats-form" novalidate autocomplete="off">
+              <div class="haul-field haul-field-toggle">
+                <span class="haul-label">Units</span>
+                <div class="haul-segment" role="radiogroup" aria-label="Unit system">
+                  <button
+                    type="button"
+                    class="haul-segment-option"
+                    data-units="metric"
+                    role="radio"
+                    aria-checked="false"
+                  >
+                    Metric
+                  </button>
+                  <button
+                    type="button"
+                    class="haul-segment-option selected"
+                    data-units="imperial"
+                    role="radio"
+                    aria-checked="true"
+                  >
+                    Imperial
+                  </button>
+                </div>
+              </div>
+
+              <div class="haul-field-row">
+                <div class="haul-field">
+                  <label class="haul-label" for="stats-age">Age</label>
+                  <div class="haul-input-row">
+                    <input
+                      type="number"
+                      id="stats-age"
+                      class="haul-input"
+                      inputmode="numeric"
+                      min="13"
+                      max="100"
+                      placeholder="32"
+                    />
+                    <span class="haul-input-unit">yrs</span>
+                  </div>
+                </div>
+
+                <div class="haul-field">
+                  <span class="haul-label">
+                    Sex
+                    <span class="haul-label-hint">for BMR formula</span>
+                  </span>
+                  <div class="haul-segment" role="radiogroup" aria-label="Sex">
+                    <button
+                      type="button"
+                      class="haul-segment-option"
+                      data-sex="male"
+                      role="radio"
+                      aria-checked="false"
+                    >
+                      Male
+                    </button>
+                    <button
+                      type="button"
+                      class="haul-segment-option"
+                      data-sex="female"
+                      role="radio"
+                      aria-checked="false"
+                    >
+                      Female
+                    </button>
+                  </div>
+                </div>
+              </div>
+
+              <div class="haul-field" data-units-display="metric" hidden>
+                <label class="haul-label" for="stats-height-cm">Height</label>
+                <div class="haul-input-row">
+                  <input
+                    type="number"
+                    id="stats-height-cm"
+                    class="haul-input"
+                    inputmode="numeric"
+                    min="120"
+                    max="230"
+                    placeholder="170"
+                  />
+                  <span class="haul-input-unit">cm</span>
+                </div>
+              </div>
+
+              <div class="haul-field" data-units-display="imperial">
+                <span class="haul-label">Height</span>
+                <div class="haul-input-row haul-input-row-double">
+                  <input
+                    type="number"
+                    id="stats-height-ft"
+                    class="haul-input"
+                    inputmode="numeric"
+                    min="3"
+                    max="8"
+                    placeholder="5"
+                    aria-label="Height in feet"
+                  />
+                  <span class="haul-input-unit">ft</span>
+                  <input
+                    type="number"
+                    id="stats-height-in"
+                    class="haul-input"
+                    inputmode="numeric"
+                    min="0"
+                    max="11"
+                    placeholder="8"
+                    aria-label="Height in inches"
+                  />
+                  <span class="haul-input-unit">in</span>
+                </div>
+              </div>
+
+              <div class="haul-field-row">
+                <div class="haul-field">
+                  <label class="haul-label" for="stats-weight">Current weight</label>
+                  <div class="haul-input-row">
+                    <input
+                      type="number"
+                      id="stats-weight"
+                      class="haul-input"
+                      inputmode="decimal"
+                      step="0.1"
+                      placeholder="68"
+                    />
+                    <span class="haul-input-unit" data-unit-of="weight">kg</span>
+                  </div>
+                </div>
+
+                <div class="haul-field">
+                  <label class="haul-label" for="stats-goal-weight">
+                    Goal weight
+                    <span class="haul-label-hint">optional</span>
+                  </label>
+                  <div class="haul-input-row">
+                    <input
+                      type="number"
+                      id="stats-goal-weight"
+                      class="haul-input"
+                      inputmode="decimal"
+                      step="0.1"
+                      placeholder="65"
+                    />
+                    <span class="haul-input-unit" data-unit-of="weight">kg</span>
+                  </div>
+                </div>
+              </div>
+            </form>
+
+            <div class="haul-actions">
+              <a class="button button-light haul-back" href="#goal">Back</a>
+              <button
+                type="button"
+                class="button button-dark haul-continue"
+                id="stats-continue-btn"
+                disabled
+                aria-disabled="true"
+              >
+                Continue
+              </button>
+              <p class="haul-helper" id="stats-helper">Fill in your details to continue.</p>
+            </div>
+          </section>
+
+          <section class="haul-step" data-step="training" id="step-training" hidden>
+            <div class="haul-intro">
+              <div class="pill">Coreon Haul · your training</div>
+              <h1>Tell us about your training.</h1>
+              <p>
+                Where Coreon's runner-specific math kicks in. Mileage shapes
+                your calorie target; hard days shape when carbs spike.
+              </p>
+              <div class="haul-context" id="training-context">
+                <span class="haul-context-label">Goal</span>
+                <span class="haul-context-value" id="training-goal-summary">Not set</span>
+                <a class="haul-context-edit" href="#goal">Change</a>
+              </div>
+            </div>
+
+            <form class="haul-form" id="training-form" novalidate autocomplete="off">
+              <div class="haul-field">
+                <label class="haul-label" for="training-mileage">
+                  Weekly mileage
+                  <span class="haul-label-hint">average across a typical week</span>
+                </label>
+                <div class="haul-input-row">
+                  <input
+                    type="number"
+                    id="training-mileage"
+                    class="haul-input"
+                    inputmode="decimal"
+                    step="0.1"
+                    min="0"
+                    max="300"
+                    placeholder="25"
+                  />
+                  <span class="haul-input-unit" data-unit-of="distance">mi</span>
+                </div>
+              </div>
+
+              <div class="haul-field">
+                <span class="haul-label">
+                  Hard days per week
+                  <span class="haul-label-hint">long runs + workouts</span>
+                </span>
+                <div class="haul-segment" role="radiogroup" aria-label="Hard days per week">
+                  <button
+                    type="button"
+                    class="haul-segment-option"
+                    data-hard-days="0"
+                    role="radio"
+                    aria-checked="false"
+                  >0</button>
+                  <button
+                    type="button"
+                    class="haul-segment-option"
+                    data-hard-days="1"
+                    role="radio"
+                    aria-checked="false"
+                  >1</button>
+                  <button
+                    type="button"
+                    class="haul-segment-option"
+                    data-hard-days="2"
+                    role="radio"
+                    aria-checked="false"
+                  >2</button>
+                  <button
+                    type="button"
+                    class="haul-segment-option"
+                    data-hard-days="3"
+                    role="radio"
+                    aria-checked="false"
+                  >3+</button>
+                </div>
+              </div>
+
+              <div class="haul-field haul-field-alternative">
+                <span class="haul-label">
+                  Not a runner?
+                  <span class="haul-label-hint">use this instead</span>
+                </span>
+                <div class="haul-segment" role="radiogroup" aria-label="Activity level">
+                  <button
+                    type="button"
+                    class="haul-segment-option"
+                    data-activity="light"
+                    role="radio"
+                    aria-checked="false"
+                  >Light</button>
+                  <button
+                    type="button"
+                    class="haul-segment-option"
+                    data-activity="moderate"
+                    role="radio"
+                    aria-checked="false"
+                  >Moderate</button>
+                  <button
+                    type="button"
+                    class="haul-segment-option"
+                    data-activity="high"
+                    role="radio"
+                    aria-checked="false"
+                  >High</button>
+                </div>
+                <p class="haul-field-help">
+                  Pick how active you are and we'll skip the mileage. Light:
+                  1–3 days/week of light-to-moderate exercise. Moderate: 4–5
+                  days/week. High: 6+ days/week or hard daily training.
+                </p>
+              </div>
+            </form>
+
+            <div class="haul-actions">
+              <a class="button button-light haul-back" href="#stats">Back</a>
+              <button
+                type="button"
+                class="button button-dark haul-continue"
+                id="training-continue-btn"
+                disabled
+                aria-disabled="true"
+              >
+                Continue
+              </button>
+              <p class="haul-helper" id="training-helper">Fill in your training to continue.</p>
+            </div>
+          </section>
+
+          <section class="haul-step" data-step="diet" id="step-diet" hidden>
+            <div class="haul-intro">
+              <div class="pill">Coreon Haul · diet preferences</div>
+              <h1>How do you like to eat?</h1>
+              <p>
+                The shape of your week — what's in, what's out, and how much
+                time you've got at the stove.
+              </p>
+              <div class="haul-context" id="diet-context">
+                <span class="haul-context-label">Goal</span>
+                <span class="haul-context-value" id="diet-goal-summary">Not set</span>
+                <a class="haul-context-edit" href="#goal">Change</a>
+              </div>
+            </div>
+
+            <form class="haul-form" id="diet-form" novalidate autocomplete="off">
+              <div class="haul-field">
+                <span class="haul-label">Diet style</span>
+                <div class="haul-segment" role="radiogroup" aria-label="Diet style">
+                  <button
+                    type="button"
+                    class="haul-segment-option"
+                    data-diet="omnivore"
+                    role="radio"
+                    aria-checked="false"
+                  >Omnivore</button>
+                  <button
+                    type="button"
+                    class="haul-segment-option"
+                    data-diet="vegetarian"
+                    role="radio"
+                    aria-checked="false"
+                  >Vegetarian</button>
+                  <button
+                    type="button"
+                    class="haul-segment-option"
+                    data-diet="vegan"
+                    role="radio"
+                    aria-checked="false"
+                  >Vegan</button>
+                </div>
+              </div>
+
+              <div class="haul-field">
+                <span class="haul-label">
+                  Avoid
+                  <span class="haul-label-hint">tap any that apply</span>
+                </span>
+                <div class="haul-chips" role="group" aria-label="Foods to avoid">
+                  <button type="button" class="haul-chip" data-avoid="dairy" aria-pressed="false">Dairy</button>
+                  <button type="button" class="haul-chip" data-avoid="gluten" aria-pressed="false">Gluten</button>
+                  <button type="button" class="haul-chip" data-avoid="nuts" aria-pressed="false">Nuts</button>
+                  <button type="button" class="haul-chip" data-avoid="shellfish" aria-pressed="false">Shellfish</button>
+                  <button type="button" class="haul-chip" data-avoid="pork" aria-pressed="false">Pork</button>
+                  <button type="button" class="haul-chip" data-avoid="mushrooms" aria-pressed="false">Mushrooms</button>
+                  <button type="button" class="haul-chip" data-avoid="eggs" aria-pressed="false">Eggs</button>
+                </div>
+                <input
+                  type="text"
+                  id="diet-avoid-other"
+                  class="haul-input"
+                  placeholder="Anything else? e.g., cilantro, fennel"
+                  aria-label="Other foods to avoid"
+                />
+              </div>
+
+              <div class="haul-field">
+                <span class="haul-label">
+                  Meals per day
+                  <span class="haul-label-hint">meals + snacks</span>
+                </span>
+                <div class="haul-segment" role="radiogroup" aria-label="Meals per day">
+                  <button
+                    type="button"
+                    class="haul-segment-option"
+                    data-meals="3"
+                    role="radio"
+                    aria-checked="false"
+                  >3</button>
+                  <button
+                    type="button"
+                    class="haul-segment-option"
+                    data-meals="3+1"
+                    role="radio"
+                    aria-checked="false"
+                  >3 + 1</button>
+                  <button
+                    type="button"
+                    class="haul-segment-option"
+                    data-meals="3+2"
+                    role="radio"
+                    aria-checked="false"
+                  >3 + 2</button>
+                </div>
+              </div>
+
+              <div class="haul-field">
+                <span class="haul-label">Plan length</span>
+                <div class="haul-segment" role="radiogroup" aria-label="Plan length">
+                  <button
+                    type="button"
+                    class="haul-segment-option"
+                    data-plan-days="3"
+                    role="radio"
+                    aria-checked="false"
+                  >3 days</button>
+                  <button
+                    type="button"
+                    class="haul-segment-option"
+                    data-plan-days="5"
+                    role="radio"
+                    aria-checked="false"
+                  >5 days</button>
+                  <button
+                    type="button"
+                    class="haul-segment-option"
+                    data-plan-days="7"
+                    role="radio"
+                    aria-checked="false"
+                  >7 days</button>
+                </div>
+              </div>
+
+              <div class="haul-field">
+                <span class="haul-label">
+                  Max cooking time per meal
+                  <span class="haul-label-hint">prep + cook</span>
+                </span>
+                <div class="haul-segment" role="radiogroup" aria-label="Cooking time">
+                  <button
+                    type="button"
+                    class="haul-segment-option"
+                    data-cook-time="15"
+                    role="radio"
+                    aria-checked="false"
+                  >&le; 15 min</button>
+                  <button
+                    type="button"
+                    class="haul-segment-option"
+                    data-cook-time="30"
+                    role="radio"
+                    aria-checked="false"
+                  >&le; 30 min</button>
+                  <button
+                    type="button"
+                    class="haul-segment-option"
+                    data-cook-time="any"
+                    role="radio"
+                    aria-checked="false"
+                  >No limit</button>
+                </div>
+              </div>
+
+              <div class="haul-field">
+                <label class="haul-label" for="diet-notes">
+                  Anything else we should know?
+                  <span class="haul-label-hint">optional</span>
+                </label>
+                <textarea
+                  id="diet-notes"
+                  class="haul-input haul-textarea"
+                  rows="3"
+                  placeholder="e.g., I batch-cook Sundays, share meals with my kids, work night shifts"
+                ></textarea>
+              </div>
+            </form>
+
+            <div class="haul-actions">
+              <a class="button button-light haul-back" href="#training">Back</a>
+              <button
+                type="button"
+                class="button button-dark haul-continue"
+                id="diet-continue-btn"
+                disabled
+                aria-disabled="true"
+              >
+                Generate haul
+              </button>
+              <p class="haul-helper" id="diet-helper">Pick your diet style and meal setup to continue.</p>
+            </div>
+          </section>
+
+          <section class="haul-step" data-step="result" id="step-result" hidden>
+            <div class="haul-intro">
+              <div class="pill">Coreon Haul · your targets</div>
+              <h1>Here's what to eat for, every day.</h1>
+              <p>
+                Built from your goal, stats, and training. The full meal
+                plan + grocery list is coming next — these targets are the
+                foundation everything else sits on.
+              </p>
+            </div>
+
+            <div class="haul-result-card">
+              <p class="haul-result-card-label" id="result-goal-label">Fuel performance</p>
+              <div class="haul-result-calories">
+                <span id="result-calories">—</span>
+                <span class="haul-result-calories-unit">kcal · per day</span>
+              </div>
+              <div class="haul-result-macros">
+                <div class="haul-macro">
+                  <p class="haul-macro-label">Protein</p>
+                  <p class="haul-macro-value">
+                    <span id="result-protein">—</span><span class="haul-macro-unit">g</span>
+                  </p>
+                </div>
+                <div class="haul-macro">
+                  <p class="haul-macro-label">Carbs</p>
+                  <p class="haul-macro-value">
+                    <span id="result-carbs">—</span><span class="haul-macro-unit">g</span>
+                  </p>
+                </div>
+                <div class="haul-macro">
+                  <p class="haul-macro-label">Fat</p>
+                  <p class="haul-macro-value">
+                    <span id="result-fat">—</span><span class="haul-macro-unit">g</span>
+                  </p>
+                </div>
+              </div>
+            </div>
+
+            <div class="haul-why-card">
+              <p class="haul-why-label">Why these numbers</p>
+              <p id="result-why-text">—</p>
+            </div>
+
+            <details class="haul-breakdown">
+              <summary>How we got here</summary>
+              <dl class="haul-breakdown-list">
+                <div class="haul-breakdown-row">
+                  <dt>BMR <span class="haul-breakdown-hint">Mifflin–St Jeor</span></dt>
+                  <dd id="result-bmr">—</dd>
+                </div>
+                <div class="haul-breakdown-row" data-mode-row="runner">
+                  <dt>Running expenditure <span class="haul-breakdown-hint">per day</span></dt>
+                  <dd id="result-running">—</dd>
+                </div>
+                <div class="haul-breakdown-row" data-mode-row="runner">
+                  <dt>Other activity <span class="haul-breakdown-hint">35% of BMR</span></dt>
+                  <dd id="result-neat">—</dd>
+                </div>
+                <div class="haul-breakdown-row" data-mode-row="non-runner" hidden>
+                  <dt>Activity level <span class="haul-breakdown-hint" id="result-activity-label">moderate</span></dt>
+                  <dd id="result-activity-mult">×1.6</dd>
+                </div>
+                <div class="haul-breakdown-row haul-breakdown-divider">
+                  <dt>TDEE <span class="haul-breakdown-hint">total daily energy</span></dt>
+                  <dd id="result-tdee">—</dd>
+                </div>
+                <div class="haul-breakdown-row">
+                  <dt>Goal adjustment</dt>
+                  <dd id="result-goal-adj">—</dd>
+                </div>
+                <div class="haul-breakdown-row haul-breakdown-target">
+                  <dt>Daily target</dt>
+                  <dd id="result-target">—</dd>
+                </div>
+              </dl>
+            </details>
+
+            <p class="haul-result-note" id="result-diet-note">
+              Diet preferences saved — they'll shape the meal plan when the
+              full haul comes online.
+            </p>
+
+            <div class="haul-actions haul-result-actions">
+              <a class="button button-light" href="#goal">Edit my inputs</a>
+              <a class="button button-dark" href="index.html">Back to Coreon</a>
+            </div>
+          </section>
+        </div>
+      </section>
+    </main>
+    <script src="haul.js"></script>
+  </body>
+</html>

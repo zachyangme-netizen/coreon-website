@@ -23,8 +23,6 @@ const workoutList = document.getElementById("workout-list");
 const planTitle = document.getElementById("plan-title");
 const durationBadge = document.getElementById("duration-badge");
 const whyText = document.getElementById("why-text");
-const waitlistForm = document.getElementById("waitlist-form");
-const formStatus = document.getElementById("form-status");
 const appShell = document.querySelector(".app-shell");
 const refreshBtn = document.getElementById("refresh-btn");
 
@@ -125,12 +123,5 @@ async function fetchWorkout() {
 }
 
 refreshBtn.addEventListener("click", fetchWorkout);
-
-waitlistForm.addEventListener("submit", (event) => {
-  event.preventDefault();
-  const email = document.getElementById("email").value.trim();
-  formStatus.textContent = `${email} is on the Coreon waitlist.`;
-  waitlistForm.reset();
-});
 
 fetchWorkout();

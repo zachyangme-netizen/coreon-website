@@ -1,0 +1,1 @@
+1. before executing, always challenge and see if there are other better solutions

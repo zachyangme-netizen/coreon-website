@@ -3,10 +3,10 @@
   <head>
     <meta charset="UTF-8" />
     <meta name="viewport" content="width=device-width, initial-scale=1.0" />
-    <title>Coreon | Strength for Runners</title>
+    <title>Coreon | Training Tools for Runners</title>
     <meta
       name="description"
-      content="Coreon helps runners build strength and recovery into their week with clear workouts that feel simple enough to do even on tired days."
+      content="Coreon builds the boring-but-essential parts of training into tools that runners actually use. Strength sessions you won't skip. A grocery list that hits your goal."
     />
     <link rel="preconnect" href="https://fonts.googleapis.com" />
     <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
@@ -22,24 +22,23 @@
         <header class="top-nav">
           <a class="nav-brand" href="#" aria-label="Coreon home">Coreon</a>
           <nav class="nav-links" aria-label="Primary navigation">
-            <a href="#features">Features</a>
+            <a class="nav-link-haul" href="haul.html">Haul<span class="nav-badge">New</span></a>
+            <a href="#tools">Tools</a>
             <a href="#how">How it works</a>
-            <a href="#waitlist">Waitlist</a>
           </nav>
-          <a class="nav-cta" href="#waitlist">Join</a>
         </header>
         <div class="container hero-grid">
           <div class="hero-copy">
-            <div class="pill">Coreon · strength for runners</div>
-            <h1>Make strength training actually stick for runners.</h1>
+            <div class="pill">Coreon · training tools for runners</div>
+            <h1>The thoughtful side of training, in two tools.</h1>
             <p>
-              Coreon helps runners build strength and recovery into their week
-              with clear workouts that feel simple enough to do even on tired
-              days.
+              Coreon builds the boring-but-essential parts of training into
+              tools that runners actually use. Strength sessions you won't
+              skip. A grocery list that hits your goal.
             </p>
             <div class="hero-actions">
-              <a class="button button-dark" href="#waitlist">Join waitlist</a>
-              <a class="button button-light" href="#features">Explore features</a>
+              <a class="button button-dark" href="haul.html">Open Haul</a>
+              <a class="button button-light" href="#strength">See Strength</a>
             </div>
             <div class="trust-row" aria-label="Coreon attributes">
               <span>AI-assisted</span>
@@ -48,103 +47,175 @@
             </div>
           </div>
 
-          <div class="app-shell" aria-label="Coreon workout demo">
-            <div class="app-card">
-              <div class="plan-header">
-                <div>
-                  <p>Today’s plan</p>
-                  <h2 id="plan-title">Post-run reset</h2>
-                </div>
-                <div class="plan-header-right">
-                  <div class="duration-badge" id="duration-badge">24 min</div>
-                  <button id="refresh-btn" type="button" aria-label="Refresh workout">↻</button>
-                </div>
-              </div>
-
-              <div class="workout-list" id="workout-list">
-                <div class="workout-row active" data-index="0">
+          <aside class="hero-preview" aria-hidden="true">
+            <div class="hero-preview-card">
+              <p class="hero-preview-label">Today</p>
+              <div class="hero-preview-rows">
+                <div class="hero-preview-row">
                   <span>Hip flexor stretch</span>
-                  <button type="button">Start</button>
+                  <span class="hero-preview-row-meta">2 min</span>
                 </div>
-                <div class="workout-row" data-index="1">
-                  <span>Glute bridge hold</span>
-                  <button type="button">Start</button>
-                </div>
-                <div class="workout-row" data-index="2">
+                <div class="hero-preview-row">
                   <span>Single-leg RDL</span>
-                  <button type="button">Start</button>
+                  <span class="hero-preview-row-meta">2.5 min</span>
                 </div>
-                <div class="workout-row" data-index="3">
-                  <span>Dead bug</span>
-                  <button type="button">Start</button>
-                </div>
-                <div class="workout-row" data-index="4">
-                  <span>Child’s pose reset</span>
-                  <button type="button">Start</button>
+                <div class="hero-preview-row">
+                  <span>Easy run</span>
+                  <span class="hero-preview-row-meta">4 mi</span>
                 </div>
               </div>
 
-              <div class="demo-readout">
-                <div class="demo-timer">
-                  <span id="active-label">Hip flexor stretch</span>
-                  <strong id="timer">02:00</strong>
+              <div class="hero-preview-haul">
+                <p class="hero-preview-haul-label">Daily target</p>
+                <div class="hero-preview-haul-numbers">
+                  <strong>2,340</strong>
+                  <span>kcal</span>
                 </div>
-                <div class="progress-track" aria-label="Demo progress">
-                  <span id="progress-bar"></span>
+                <div class="hero-preview-haul-macros">
+                  <span><strong>165</strong>g <em>P</em></span>
+                  <span><strong>290</strong>g <em>C</em></span>
+                  <span><strong>70</strong>g <em>F</em></span>
                 </div>
-              </div>
-
-              <div class="why-card">
-                <p>Why today looks like this</p>
-                <span id="why-text">
-                  You had a long run yesterday, so Coreon shifted today toward
-                  mobility, core stability, and lower fatigue work.
-                </span>
               </div>
             </div>
-          </div>
+          </aside>
         </div>
       </section>
 
-      <section id="features" class="container features-section">
+      <section id="tools" class="container tools-section">
         <div class="section-intro">
-          <p>Features</p>
-          <h2>
-            Designed for runners who know strength matters, but struggle to do
-            it consistently.
-          </h2>
+          <p>Tools</p>
+          <h2>Two tools, working together. More on the way.</h2>
         </div>
 
-        <div class="feature-grid">
-          <article>
-            <h3>Strength plans for runners</h3>
+        <div class="tools-grid">
+          <article id="strength" class="tool-card">
+            <span class="tool-card-pill">Strength</span>
+            <h3>Strength training that fits your week.</h3>
             <p>
-              Simple strength sessions designed to support running performance,
-              durability, and consistency.
+              Short, focused sessions that adapt to your running. Built for
+              runners who know strength matters but skip it anyway.
             </p>
+
+            <div class="app-shell" aria-label="Coreon workout demo">
+              <div class="app-card">
+                <div class="plan-header">
+                  <div>
+                    <p>Today's plan</p>
+                    <h2 id="plan-title">Post-run reset</h2>
+                  </div>
+                  <div class="plan-header-right">
+                    <div class="duration-badge" id="duration-badge">24 min</div>
+                    <button id="refresh-btn" type="button" aria-label="Refresh workout">↻</button>
+                  </div>
+                </div>
+
+                <div class="workout-list" id="workout-list">
+                  <div class="workout-row active" data-index="0">
+                    <span>Hip flexor stretch</span>
+                    <button type="button">Start</button>
+                  </div>
+                  <div class="workout-row" data-index="1">
+                    <span>Glute bridge hold</span>
+                    <button type="button">Start</button>
+                  </div>
+                  <div class="workout-row" data-index="2">
+                    <span>Single-leg RDL</span>
+                    <button type="button">Start</button>
+                  </div>
+                  <div class="workout-row" data-index="3">
+                    <span>Dead bug</span>
+                    <button type="button">Start</button>
+                  </div>
+                  <div class="workout-row" data-index="4">
+                    <span>Child's pose reset</span>
+                    <button type="button">Start</button>
+                  </div>
+                </div>
+
+                <div class="demo-readout">
+                  <div class="demo-timer">
+                    <span id="active-label">Hip flexor stretch</span>
+                    <strong id="timer">02:00</strong>
+                  </div>
+                  <div class="progress-track" aria-label="Demo progress">
+                    <span id="progress-bar"></span>
+                  </div>
+                </div>
+
+                <div class="why-card">
+                  <p>Why today looks like this</p>
+                  <span id="why-text">
+                    You had a long run yesterday, so Coreon shifted today toward
+                    mobility, core stability, and lower fatigue work.
+                  </span>
+                </div>
+              </div>
+            </div>
           </article>
-          <article>
-            <h3>Adaptive weekly flow</h3>
+
+          <a id="haul-feature" class="tool-card tool-card-link" href="haul.html">
+            <span class="tool-card-pill tool-card-pill-new">Haul · New</span>
+            <h3>A grocery list that thinks for runners.</h3>
             <p>
-              Workouts adjust to your training week so strength fits around long
-              runs, recovery days, and busy schedules.
+              Tell us your goal and stats. Get a calorie + macro target tuned
+              to your weekly mileage — and (soon) a smart grocery list to
+              hit it.
             </p>
-          </article>
-          <article>
-            <h3>Stretch + mobility guidance</h3>
-            <p>
-              Recovery-focused routines for tired days, with clear structure so
-              users know exactly what to do.
-            </p>
-          </article>
-          <article>
-            <h3>Built for consistency</h3>
-            <p>
-              Low-friction experience focused on showing up, not overthinking.
-              Open the app, get the workout, and move.
-            </p>
-          </article>
+
+            <div class="tool-haul-preview" aria-hidden="true">
+              <p class="tool-haul-preview-label">Sample target</p>
+              <div class="tool-haul-preview-numbers">
+                <strong>2,340</strong>
+                <span>kcal / day</span>
+              </div>
+              <div class="tool-haul-preview-macros">
+                <div>
+                  <strong>165</strong><span>g</span>
+                  <em>Protein</em>
+                </div>
+                <div>
+                  <strong>290</strong><span>g</span>
+                  <em>Carbs</em>
+                </div>
+                <div>
+                  <strong>70</strong><span>g</span>
+                  <em>Fat</em>
+                </div>
+              </div>
+
+              <div class="tool-haul-preview-why">
+                <p class="tool-haul-preview-why-label">Why this target</p>
+                <span>
+                  Built for a 25-mi week with 1 hard day. Performance fuel —
+                  no deficit, no surplus, protein at 1.6 g/kg.
+                </span>
+              </div>
+
+              <div class="tool-haul-preview-list">
+                <p class="tool-haul-preview-list-label">Sample haul</p>
+                <ul>
+                  <li><span>Chicken breast</span><span>1.4 kg</span></li>
+                  <li><span>Sweet potato</span><span>1.2 kg</span></li>
+                  <li><span>Greek yogurt</span><span>1.4 kg</span></li>
+                  <li><span>Rolled oats</span><span>700 g</span></li>
+                </ul>
+                <p class="tool-haul-preview-list-more">+ 18 more items</p>
+              </div>
+            </div>
+
+            <span class="tool-card-cta">Open Haul<span aria-hidden="true"> →</span></span>
+          </a>
         </div>
+
+        <article class="tool-ghost-card">
+          <span class="tool-card-pill">Coming next</span>
+          <h3>More tools, same shape.</h3>
+          <p>
+            Recovery routines. Race plans. Pacing tools. Built the same way —
+            tight, focused, and easy to actually use.
+          </p>
+        </article>
       </section>
 
       <section id="how" class="how-section">
@@ -156,15 +227,15 @@
           <div class="steps-list">
             <article>
               <span>1</span>
-              <p>Tell Coreon your running schedule and goals</p>
+              <p>Tell Coreon about your goal and your training</p>
             </article>
             <article>
               <span>2</span>
-              <p>Get a smart weekly strength + recovery plan</p>
+              <p>Pick the tool you need right now</p>
             </article>
             <article>
               <span>3</span>
-              <p>Follow quick sessions that actually fit your life</p>
+              <p>Get something useful in under a minute</p>
             </article>
           </div>
         </div>
@@ -180,7 +251,7 @@
           <article>
             <p>For busy runners</p>
             <h3>Built around real life</h3>
-            <span>Sessions that work on high-energy days and tired days alike.</span>
+            <span>Tools that work on high-energy days and tired days alike.</span>
           </article>
           <article>
             <p>For long-term progress</p>
@@ -193,30 +264,28 @@
         </div>
       </section>
 
-      <section id="waitlist" class="waitlist-section">
-        <div class="waitlist-card">
-          <p class="section-label">Early access</p>
-          <h2>Join Coreon and build a stronger running routine.</h2>
+      <section class="closing-section">
+        <div class="closing-card">
+          <p class="section-label">Start moving</p>
+          <h2>Pick a tool. Start moving.</h2>
           <p>
-            Be the first to try runner strength and recovery plans built to make
-            consistency easier.
+            Coreon's tools are built to be used, not signed up for. Open one
+            and see how it feels.
           </p>
-
-          <form id="waitlist-form" class="waitlist-form">
-            <input
-              id="email"
-              name="email"
-              type="email"
-              autocomplete="email"
-              placeholder="Enter your email"
-              required
-            />
-            <button type="submit">Join waitlist</button>
-          </form>
-          <div id="form-status" class="form-status" role="status" aria-live="polite"></div>
+          <a class="button closing-cta" href="haul.html">Open Haul</a>
         </div>
       </section>
     </main>
+
+    <footer class="site-footer">
+      <div class="container site-footer-row">
+        <p class="site-footer-brand">
+          <strong>Coreon</strong> — training tools for runners.
+        </p>
+        <p class="site-footer-copy">© 2026 Coreon</p>
+      </div>
+    </footer>
+
     <script src="script.js"></script>
   </body>
 </html>
