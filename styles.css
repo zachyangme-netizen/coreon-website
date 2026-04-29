@@ -1157,6 +1157,15 @@ p {
   letter-spacing: -0.035em;
 }
 
+/* Headings get programmatic focus on step changes (so screen readers
+   announce the new section). Suppress the visible focus ring — keyboard
+   users can't tab here (tabindex="-1"). */
+.haul-step h1:focus,
+.haul-step h2:focus,
+.haul-placeholder h2:focus {
+  outline: none;
+}
+
 .haul-intro p {
   max-width: 600px;
   margin-top: 20px;
