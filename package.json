@@ -2,7 +2,16 @@
   "name": "coreon-website",
   "version": "1.0.0",
   "type": "module",
+  "scripts": {
+    "dev": "vite",
+    "build": "vite build",
+    "preview": "vite preview"
+  },
   "dependencies": {
-    "@anthropic-ai/sdk": "^0.91.0"
+    "@anthropic-ai/sdk": "^0.91.0",
+    "@supabase/supabase-js": "^2.109.0"
+  },
+  "devDependencies": {
+    "vite": "^6.0.0"
   }
 }

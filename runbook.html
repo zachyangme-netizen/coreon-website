@@ -1,0 +1,456 @@
+<!DOCTYPE html>
+<html lang="en">
+  <head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <title>Coreon Runbook | Training Plans for Runners</title>
+    <meta
+      name="description"
+      content="A multi-week training plan tuned to your goal and current state. From 5K to marathon — built for runners, not generic athletes."
+    />
+    <link rel="preconnect" href="https://fonts.googleapis.com" />
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
+    <link
+      href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&display=swap"
+      rel="stylesheet"
+    />
+    <link rel="stylesheet" href="styles.css" />
+  </head>
+  <body>
+    <main class="site-shell">
+      <section class="haul-page runbook-page">
+        <header class="top-nav">
+          <a class="nav-brand" href="index.html" aria-label="Coreon home">Coreon</a>
+          <nav class="nav-links" aria-label="Primary navigation">
+            <a href="haul.html" class="nav-link-haul">Haul<span class="nav-badge">New</span></a>
+            <a href="strength.html">Strength</a>
+            <a href="runbook.html" class="nav-link-active" aria-current="page">Runbook<span class="nav-badge">New</span></a>
+            <a href="index.html#how">How it works</a>
+          </nav>
+        </header>
+
+        <div class="container haul-container">
+          <div class="haul-step-indicator" aria-label="Wizard progress">
+            <p class="section-label" id="step-label">Step 1 of 4 · Goal</p>
+            <div class="progress-track" aria-hidden="true">
+              <span id="step-progress" style="width: 25%"></span>
+            </div>
+          </div>
+
+          <!-- ─────────────────────────────────────────────
+               Step 1 — Goal
+               ───────────────────────────────────────────── -->
+          <section class="haul-step" data-step="goal" id="step-goal">
+            <div class="haul-intro">
+              <div class="pill">Coreon Runbook · for runners</div>
+              <h1>What are you training for?</h1>
+              <p>
+                Pick the goal that fits this season. Coreon will build a
+                multi-week plan tuned to your current state and schedule.
+              </p>
+            </div>
+
+            <div class="haul-goal-grid" role="radiogroup" aria-label="Choose a goal">
+              <button
+                type="button"
+                class="haul-goal-card"
+                data-goal="5k"
+                role="radio"
+                aria-checked="false"
+              >
+                <p class="goal-tag">5K</p>
+                <h3>Run a faster 5K</h3>
+                <span>
+                  Short, sharp training — speed work matters. 6–12 week plans.
+                </span>
+              </button>
+
+              <button
+                type="button"
+                class="haul-goal-card"
+                data-goal="10k"
+                role="radio"
+                aria-checked="false"
+              >
+                <p class="goal-tag">10K</p>
+                <h3>Run a faster 10K</h3>
+                <span>
+                  Speed and threshold work meet endurance. 8–14 week plans.
+                </span>
+              </button>
+
+              <button
+                type="button"
+                class="haul-goal-card"
+                data-goal="half-marathon"
+                role="radio"
+                aria-checked="false"
+              >
+                <p class="goal-tag">Half marathon</p>
+                <h3>Build for the half</h3>
+                <span>
+                  Endurance + race-pace work. 10–16 week plans.
+                </span>
+              </button>
+
+              <button
+                type="button"
+                class="haul-goal-card haul-goal-card-recommended"
+                data-goal="marathon"
+                role="radio"
+                aria-checked="false"
+              >
+                <span class="haul-recommended-tag" aria-hidden="true">Recommended</span>
+                <p class="goal-tag">Marathon</p>
+                <h3>Train for the marathon</h3>
+                <span>
+                  Long-game training. 16–28 week plans. Defaults to Chicago 2026 as the anchor race.
+                </span>
+              </button>
+
+              <button
+                type="button"
+                class="haul-goal-card"
+                data-goal="base"
+                role="radio"
+                aria-checked="false"
+              >
+                <p class="goal-tag">Base fitness</p>
+                <h3>Build consistent mileage</h3>
+                <span>
+                  No race — just steady aerobic work. 12 weeks with built-in
+                  recovery weeks.
+                </span>
+              </button>
+            </div>
+
+            <div class="haul-actions">
+              <button
+                type="button"
+                class="button button-dark haul-continue"
+                id="runbook-goal-continue"
+                disabled
+                aria-disabled="true"
+              >
+                Continue
+              </button>
+              <p class="haul-helper" id="runbook-goal-helper">Pick a goal to continue.</p>
+            </div>
+          </section>
+
+          <!-- ─────────────────────────────────────────────
+               Step 2 — Current state
+               ───────────────────────────────────────────── -->
+          <section class="haul-step" data-step="state" id="step-state" hidden>
+            <div class="haul-intro">
+              <div class="pill">Coreon Runbook · current state</div>
+              <h1>Where are you starting from?</h1>
+              <p>
+                Real numbers help us build a plan that fits — not too aggressive,
+                not too sleepy.
+              </p>
+              <div class="haul-context">
+                <span class="haul-context-label">Goal</span>
+                <span class="haul-context-value" id="runbook-state-goal-summary">Not set</span>
+                <a class="haul-context-edit" href="#goal">Change</a>
+              </div>
+            </div>
+
+            <form class="haul-form" id="runbook-state-form" novalidate autocomplete="off">
+              <div class="haul-field-row">
+                <div class="haul-field">
+                  <label class="haul-label" for="runbook-weekly-mileage">
+                    Current weekly mileage
+                    <span class="haul-label-hint">average over the last few weeks</span>
+                  </label>
+                  <div class="haul-input-row">
+                    <input
+                      type="number"
+                      id="runbook-weekly-mileage"
+                      class="haul-input"
+                      inputmode="decimal"
+                      step="0.5"
+                      min="0"
+                      max="200"
+                      placeholder="25"
+                    />
+                    <span class="haul-input-unit" data-unit-of="distance">mi</span>
+                  </div>
+                </div>
+
+                <div class="haul-field">
+                  <label class="haul-label" for="runbook-long-run">
+                    Recent long run
+                    <span class="haul-label-hint">longest single run in the last 2–3 weeks</span>
+                  </label>
+                  <div class="haul-input-row">
+                    <input
+                      type="number"
+                      id="runbook-long-run"
+                      class="haul-input"
+                      inputmode="decimal"
+                      step="0.5"
+                      min="0"
+                      max="50"
+                      placeholder="8"
+                    />
+                    <span class="haul-input-unit" data-unit-of="distance">mi</span>
+                  </div>
+                </div>
+              </div>
+
+              <div class="haul-field-row">
+                <div class="haul-field">
+                  <label class="haul-label" for="runbook-easy-pace">
+                    Recent easy pace
+                    <span class="haul-label-hint">optional · MM:SS per mile</span>
+                  </label>
+                  <input
+                    type="text"
+                    id="runbook-easy-pace"
+                    class="haul-input"
+                    inputmode="numeric"
+                    placeholder="9:00"
+                    pattern="[0-9:]*"
+                    autocomplete="off"
+                  />
+                </div>
+
+                <div class="haul-field">
+                  <label class="haul-label" for="runbook-tempo-pace">
+                    Recent tempo pace
+                    <span class="haul-label-hint">optional · threshold effort, MM:SS</span>
+                  </label>
+                  <input
+                    type="text"
+                    id="runbook-tempo-pace"
+                    class="haul-input"
+                    inputmode="numeric"
+                    placeholder="7:30"
+                    pattern="[0-9:]*"
+                    autocomplete="off"
+                  />
+                </div>
+              </div>
+
+              <p class="haul-field-help">
+                Both pace fields are optional. Fill them in and we'll use them
+                to personalize calendar durations and add numeric pace
+                prescriptions to your workouts. Skip them and we'll fall back
+                to PR-derived or default paces.
+              </p>
+
+              <div class="haul-field-row" id="runbook-race-fields">
+                <div class="haul-field">
+                  <label class="haul-label" for="runbook-pr">
+                    Personal record
+                    <span class="haul-label-hint">best time at this distance</span>
+                  </label>
+                  <input
+                    type="text"
+                    id="runbook-pr"
+                    class="haul-input"
+                    inputmode="numeric"
+                    placeholder="3:45:00"
+                    pattern="[0-9:]*"
+                    autocomplete="off"
+                  />
+                </div>
+
+                <div class="haul-field">
+                  <label class="haul-label" for="runbook-goal-time">
+                    Goal time
+                    <span class="haul-label-hint">what you're aiming for</span>
+                  </label>
+                  <input
+                    type="text"
+                    id="runbook-goal-time"
+                    class="haul-input"
+                    inputmode="numeric"
+                    placeholder="3:30:00"
+                    pattern="[0-9:]*"
+                    autocomplete="off"
+                  />
+                </div>
+              </div>
+
+              <div class="haul-field">
+                <span class="haul-label">
+                  Days per week available to run
+                  <span class="haul-label-hint">excluding cross-training</span>
+                </span>
+                <div class="haul-segment" role="radiogroup" aria-label="Days per week">
+                  <button
+                    type="button"
+                    class="haul-segment-option"
+                    data-days-per-week="3"
+                    role="radio"
+                    aria-checked="false"
+                  >3</button>
+                  <button
+                    type="button"
+                    class="haul-segment-option"
+                    data-days-per-week="4"
+                    role="radio"
+                    aria-checked="false"
+                  >4</button>
+                  <button
+                    type="button"
+                    class="haul-segment-option"
+                    data-days-per-week="5"
+                    role="radio"
+                    aria-checked="false"
+                  >5</button>
+                  <button
+                    type="button"
+                    class="haul-segment-option"
+                    data-days-per-week="6"
+                    role="radio"
+                    aria-checked="false"
+                  >6</button>
+                </div>
+              </div>
+
+            </form>
+
+            <div class="haul-actions">
+              <a class="button button-light haul-back" href="#goal">Back</a>
+              <button
+                type="button"
+                class="button button-dark haul-continue"
+                id="runbook-state-continue"
+                disabled
+                aria-disabled="true"
+              >
+                Continue
+              </button>
+              <p class="haul-helper" id="runbook-state-helper">Fill in your current state to continue.</p>
+            </div>
+          </section>
+
+          <!-- ─────────────────────────────────────────────
+               Step 3 — Schedule
+               ───────────────────────────────────────────── -->
+          <section class="haul-step" data-step="schedule" id="step-schedule" hidden>
+            <div class="haul-intro">
+              <div class="pill">Coreon Runbook · schedule</div>
+              <h1>When and how do you train?</h1>
+              <p>
+                A race date sets your plan length. Hard-day preference shapes
+                each week.
+              </p>
+              <div class="haul-context">
+                <span class="haul-context-label">Goal</span>
+                <span class="haul-context-value" id="runbook-schedule-goal-summary">Not set</span>
+                <a class="haul-context-edit" href="#goal">Change</a>
+              </div>
+            </div>
+
+            <form class="haul-form" id="runbook-schedule-form" novalidate autocomplete="off">
+              <div class="haul-field" id="runbook-race-date-field">
+                <label class="haul-label" for="runbook-race-date">
+                  Race date
+                  <span class="haul-label-hint">defaults to Chicago Marathon 2026</span>
+                </label>
+                <input
+                  type="date"
+                  id="runbook-race-date"
+                  class="haul-input"
+                  value="2026-10-11"
+                  min="2026-04-29"
+                />
+              </div>
+
+              <div class="haul-field">
+                <span class="haul-label">
+                  Long run day
+                  <span class="haul-label-hint">your weekend anchor — the longest run of the week</span>
+                </span>
+                <div class="haul-segment" role="radiogroup" aria-label="Long run day">
+                  <button
+                    type="button"
+                    class="haul-segment-option"
+                    data-long-run-day="sat"
+                    role="radio"
+                    aria-checked="false"
+                  >Sat</button>
+                  <button
+                    type="button"
+                    class="haul-segment-option"
+                    data-long-run-day="sun"
+                    role="radio"
+                    aria-checked="false"
+                  >Sun</button>
+                </div>
+                <p class="haul-field-help">
+                  Coreon will place your mid-week workout 3–4 days from the long
+                  run for recovery spacing — no need to pick it manually.
+                </p>
+              </div>
+            </form>
+
+            <aside class="haul-cross-tool-note">
+              Not sure about strength training?
+              <a href="strength.html">Check out Coreon Strength<span aria-hidden="true"> →</span></a>
+            </aside>
+
+            <div class="haul-actions">
+              <a class="button button-light haul-back" href="#state">Back</a>
+              <button
+                type="button"
+                class="button button-dark haul-continue"
+                id="runbook-schedule-continue"
+                disabled
+                aria-disabled="true"
+              >
+                Generate runbook
+              </button>
+              <p class="haul-helper" id="runbook-schedule-helper">Pick a hard-day preference to continue.</p>
+            </div>
+          </section>
+
+          <!-- ─────────────────────────────────────────────
+               Step 4 — Result (full runbook)
+               ───────────────────────────────────────────── -->
+          <section class="haul-step" data-step="result" id="step-result" hidden>
+            <div class="haul-intro">
+              <div class="pill">Your runbook</div>
+              <h1>Your training plan.</h1>
+              <p id="runbook-subhead">
+                A multi-week plan tuned to your goal and current state.
+              </p>
+            </div>
+
+            <div class="runbook-summary-card" id="runbook-summary" aria-live="polite">
+              <!-- Filled by renderRunbookView -->
+            </div>
+
+            <div class="runbook-weeks" id="runbook-weeks">
+              <!-- Filled by renderRunbookView -->
+            </div>
+
+            <div class="haul-why-card">
+              <p class="haul-why-label">Why this runbook</p>
+              <p id="runbook-why-text">—</p>
+            </div>
+
+            <div class="haul-actions haul-result-actions">
+              <a class="button button-light" href="#goal">Edit my inputs</a>
+              <button
+                type="button"
+                class="button button-dark"
+                id="runbook-pdf-btn"
+              >Generate PDF</button>
+              <button
+                type="button"
+                class="button button-dark"
+                id="runbook-cal-btn"
+              >Export to calendar</button>
+            </div>
+          </section>
+        </div>
+      </section>
+    </main>
+    <script type="module" src="/runbook.js"></script>
+  </body>
+</html>

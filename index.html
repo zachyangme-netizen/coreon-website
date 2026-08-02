@@ -23,7 +23,8 @@
           <a class="nav-brand" href="#" aria-label="Coreon home">Coreon</a>
           <nav class="nav-links" aria-label="Primary navigation">
             <a class="nav-link-haul" href="haul.html">Haul<span class="nav-badge">New</span></a>
-            <a href="#tools">Tools</a>
+            <a href="strength.html">Strength</a>
+            <a class="nav-link-haul" href="runbook.html">Runbook<span class="nav-badge">New</span></a>
             <a href="#how">How it works</a>
           </nav>
         </header>
@@ -38,7 +39,7 @@
             </p>
             <div class="hero-actions">
               <a class="button button-dark" href="haul.html">Open Haul</a>
-              <a class="button button-light" href="#strength">See Strength</a>
+              <a class="button button-light" href="strength.html">Open Strength</a>
             </div>
             <div class="trust-row" aria-label="Coreon attributes">
               <span>AI-assisted</span>
@@ -89,7 +90,7 @@
         </div>
 
         <div class="tools-grid">
-          <article id="strength" class="tool-card">
+          <a id="strength" class="tool-card tool-card-link" href="strength.html">
             <span class="tool-card-pill">Strength</span>
             <h3>Strength training that fits your week.</h3>
             <p>
@@ -152,7 +153,9 @@
                 </div>
               </div>
             </div>
-          </article>
+
+            <span class="tool-card-cta">Open Strength<span aria-hidden="true"> →</span></span>
+          </a>
 
           <a id="haul-feature" class="tool-card tool-card-link" href="haul.html">
             <span class="tool-card-pill tool-card-pill-new">Haul · New</span>
@@ -286,6 +289,6 @@
       </div>
     </footer>
 
-    <script src="script.js"></script>
+    <script type="module" src="/script.js"></script>
   </body>
 </html>

@@ -1,0 +1,181 @@
+{
+  "engine_version": "runbook-v1.0",
+  "_doc": {
+    "description": "Coreon Runbook M1 — deterministic training-plan templates.",
+    "structure": {
+      "default_paces_min_per_mi": "Used by the renderer to convert distance → duration estimate. Replaced by real user paces in M2.",
+      "phase_workouts_shared": "Base-phase workouts shared across all race goals (and used 100% by base-fitness goal).",
+      "goals": "Per-goal config: phase distribution, peak-volume targets, long-run cap, and per-phase workout libraries for build/peak/taper.",
+      "workout_selection": "Generator rotates deterministically: workouts[ (week_within_phase) % workouts.length ]. No randomness."
+    },
+    "edit_safely": "Adding workouts to a phase's array is safe — the generator just gets a bigger rotation. Removing or reordering may shift which workout appears on which week for existing plans; bump engine_version when making such changes (see ARCHITECTURE_SPEC.md §2)."
+  },
+
+  "default_paces_min_per_mi": {
+    "easy": 9.5,
+    "long": 9.5,
+    "workout": 8.0
+  },
+
+  "phase_workouts_shared": {
+    "base": [
+      {
+        "label": "Strides",
+        "workout": "6 × 20-sec strides at race effort with full recovery, after a 3-mi easy run",
+        "effort": "easy + neuromuscular"
+      },
+      {
+        "label": "Hill strides",
+        "workout": "5 × 60-sec uphill at strong effort, walk-down recovery — or 5 × 60-sec hard on flat at 5K effort with 90-sec jog recovery if no hills. Easy warmup + cooldown either way.",
+        "effort": "moderate-hard, neuromuscular"
+      },
+      {
+        "label": "Easy tempo",
+        "workout": "2 mi easy + 2 mi at comfortable hard effort + 2 mi easy",
+        "effort": "moderate / sub-threshold"
+      },
+      {
+        "label": "Progression",
+        "workout": "Run easy → moderate → strong, ~1.5 mi each segment",
+        "effort": "easy → moderate → hard"
+      },
+      {
+        "label": "Fartlek",
+        "workout": "20 min easy with 5 × 1-min surges at 5K effort, 1 min easy between",
+        "effort": "easy with surges"
+      }
+    ]
+  },
+
+  "goals": {
+
+    "5k": {
+      "label": "5K",
+      "race_distance_mi": 3.1,
+      "phase_distribution": { "base": 0.40, "build": 0.40, "peak": 0.15, "taper": 0.05 },
+      "peak_volume_mi": { "minimum": 18, "recommended": 28, "aggressive": 45 },
+      "long_run_cap_mi": 10,
+      "workouts": {
+        "build": [
+          { "label": "Mile repeats", "workout": "3 × 1 mi at 5K effort, 2-min jog recovery", "effort": "5K race effort" },
+          { "label": "800m × 5",     "workout": "5 × 800m at 5K-10K effort, 90-sec jog recovery", "effort": "5K-10K effort" },
+          { "label": "Cruise intervals", "workout": "4 × 1 mi at threshold effort, 60-sec recovery", "effort": "threshold" },
+          { "label": "Fartlek",      "workout": "10 × 1-min at 5K effort, 1-min easy between", "effort": "5K effort" },
+          { "label": "Threshold tempo", "workout": "3 mi at threshold effort, after easy warmup", "effort": "threshold" }
+        ],
+        "peak": [
+          { "label": "400m × 8",     "workout": "8 × 400m at 5K effort, 200m jog recovery", "effort": "5K race effort" },
+          { "label": "1K × 4",       "workout": "4 × 1K at 5K effort, 90-sec jog recovery", "effort": "5K race effort" },
+          { "label": "Pyramid",      "workout": "200-400-800-400-200 at 5K-3K effort, equal-distance jog recovery", "effort": "5K-3K mixed" },
+          { "label": "Race sim",     "workout": "2 mi at 5K effort, 4-min easy, 1 mi all-out", "effort": "race pace + push" },
+          { "label": "Short reps",   "workout": "10 × 200m at 3K effort, 200m jog", "effort": "3K effort" }
+        ],
+        "taper": [
+          { "label": "Tune-up",      "workout": "3 × 400m at race pace, full recovery between", "effort": "race effort, fresh legs" },
+          { "label": "Race strides", "workout": "6 × 30-sec at race pace with full recovery, after easy warmup", "effort": "race effort, neuromuscular" },
+          { "label": "Shakeout",     "workout": "Easy 20-min run with 4 × 20-sec race-pace pickups in the last mile", "effort": "easy + pickups" }
+        ]
+      }
+    },
+
+    "10k": {
+      "label": "10K",
+      "race_distance_mi": 6.2,
+      "phase_distribution": { "base": 0.40, "build": 0.40, "peak": 0.15, "taper": 0.05 },
+      "peak_volume_mi": { "minimum": 22, "recommended": 35, "aggressive": 55 },
+      "long_run_cap_mi": 12,
+      "workouts": {
+        "build": [
+          { "label": "Mile repeats",   "workout": "4 × 1 mi at 10K effort, 90-sec jog recovery", "effort": "10K race effort" },
+          { "label": "1K × 5",         "workout": "5 × 1K at 10K-5K effort, 90-sec jog recovery", "effort": "10K-5K effort" },
+          { "label": "Threshold tempo","workout": "4 mi at threshold effort", "effort": "threshold" },
+          { "label": "Cruise intervals","workout": "5 × 1 mi at threshold effort, 60-sec recovery", "effort": "threshold" },
+          { "label": "Fartlek",        "workout": "12 × 1-min at 10K effort, 1-min easy between", "effort": "10K effort" }
+        ],
+        "peak": [
+          { "label": "1 mi × 5",       "workout": "5 × 1 mi at 10K effort, 90-sec recovery", "effort": "10K race effort" },
+          { "label": "2K × 3",         "workout": "3 × 2K at 10K effort, 2-min jog recovery", "effort": "10K race effort" },
+          { "label": "Mixed pace",     "workout": "2 mi at threshold + 4 × 800m at 5K effort with 90-sec recovery", "effort": "mixed: threshold + 5K" },
+          { "label": "Race sim",       "workout": "3 mi at 10K effort, 5-min easy, 1 mi at 5K effort", "effort": "race pace + sharpener" },
+          { "label": "Cruise intervals","workout": "6 × 1K at threshold effort, 60-sec recovery", "effort": "threshold" }
+        ],
+        "taper": [
+          { "label": "Tune-up",        "workout": "3 × 600m at race pace, 90-sec recovery", "effort": "race effort, fresh legs" },
+          { "label": "Race strides",   "workout": "6 × 30-sec at race pace with full recovery, after easy warmup", "effort": "race effort, neuromuscular" },
+          { "label": "Shakeout",       "workout": "Easy 25-min run with 4 × 30-sec race-pace pickups", "effort": "easy + pickups" }
+        ]
+      }
+    },
+
+    "half-marathon": {
+      "label": "Half marathon",
+      "race_distance_mi": 13.1,
+      "phase_distribution": { "base": 0.45, "build": 0.35, "peak": 0.15, "taper": 0.05 },
+      "peak_volume_mi": { "minimum": 25, "recommended": 38, "aggressive": 60 },
+      "long_run_cap_mi": 12,
+      "workouts": {
+        "build": [
+          { "label": "Mile repeats",   "workout": "5 × 1 mi at half-marathon effort, 90-sec jog recovery", "effort": "half-marathon race effort" },
+          { "label": "Threshold tempo","workout": "5 mi at threshold effort", "effort": "threshold" },
+          { "label": "Cruise intervals","workout": "4 × 1.5 mi at threshold effort, 90-sec recovery", "effort": "threshold" },
+          { "label": "Steady-state",   "workout": "6 mi at moderate effort (just below threshold)", "effort": "moderate" },
+          { "label": "Progression LR", "workout": "Long run with last 3 mi at half-marathon effort", "effort": "easy → race effort" }
+        ],
+        "peak": [
+          { "label": "2 mi × 3",       "workout": "3 × 2 mi at half-marathon effort, 3-min recovery", "effort": "half-marathon race effort" },
+          { "label": "Half-pace block","workout": "6 mi at half-marathon effort, after easy warmup", "effort": "half-marathon race effort" },
+          { "label": "Mixed pace",     "workout": "3 × 1 mi at threshold + 3 × 1 mi at half-marathon effort, 90-sec recovery", "effort": "threshold → race effort" },
+          { "label": "Race-pace LR",   "workout": "Long run with last 5 mi at half-marathon effort", "effort": "easy → race effort" },
+          { "label": "Cruise intervals","workout": "5 × 1 mi at threshold effort, 60-sec recovery", "effort": "threshold" }
+        ],
+        "taper": [
+          { "label": "Tune-up",        "workout": "4 × 800m at race pace, 90-sec recovery", "effort": "race effort, fresh legs" },
+          { "label": "Race-pace miles","workout": "2 × 1 mi at half-marathon effort, 3-min easy between", "effort": "race effort" },
+          { "label": "Shakeout",       "workout": "Easy 30-min run with 4 × 30-sec race-pace pickups", "effort": "easy + pickups" }
+        ]
+      }
+    },
+
+    "marathon": {
+      "label": "Marathon",
+      "race_distance_mi": 26.2,
+      "phase_distribution": { "base": 0.50, "build": 0.30, "peak": 0.12, "taper": 0.08 },
+      "peak_volume_mi": { "minimum": 30, "recommended": 50, "aggressive": 75 },
+      "long_run_cap_mi": 22,
+      "workouts": {
+        "build": [
+          { "label": "Marathon-pace miles", "workout": "4 × 1 mi at marathon effort, 90-sec recovery", "effort": "marathon race effort" },
+          { "label": "Threshold tempo",     "workout": "5 mi at threshold effort (just below half-marathon pace)", "effort": "threshold" },
+          { "label": "Steady-state",        "workout": "8 mi at moderate effort", "effort": "moderate / aerobic" },
+          { "label": "Cruise intervals",    "workout": "4 × 1.5 mi at threshold effort, 90-sec recovery", "effort": "threshold" },
+          { "label": "Progression LR",      "workout": "Long run with last 3 mi at marathon effort", "effort": "easy → race effort" }
+        ],
+        "peak": [
+          { "label": "MP block",            "workout": "8 mi at marathon effort, after easy warmup", "effort": "marathon race effort" },
+          { "label": "Race-pace LR",        "workout": "Long run with last 6 mi at marathon effort", "effort": "easy → race effort" },
+          { "label": "2 mi × 3",            "workout": "3 × 2 mi at half-marathon effort, 3-min recovery", "effort": "half-marathon effort" },
+          { "label": "Mixed pace LR",       "workout": "Long run: middle 4 mi at marathon effort, finish 2 mi at half-marathon effort", "effort": "marathon → half-marathon effort" },
+          { "label": "Cruise intervals",    "workout": "6 × 1 mi at threshold effort, 60-sec recovery", "effort": "threshold" }
+        ],
+        "taper": [
+          { "label": "MP tune-up",          "workout": "3 × 1 mi at marathon effort, 90-sec recovery", "effort": "marathon race effort, fresh legs" },
+          { "label": "Short race strides",  "workout": "6 × 30-sec at half-marathon effort with full recovery, after easy warmup", "effort": "race effort, neuromuscular" },
+          { "label": "Shakeout",            "workout": "Easy 30-min run with 4 × 30-sec marathon-pace pickups", "effort": "easy + pickups" }
+        ]
+      }
+    },
+
+    "base": {
+      "label": "Base fitness",
+      "race_distance_mi": null,
+      "phase_distribution": { "base": 1.0, "build": 0.0, "peak": 0.0, "taper": 0.0 },
+      "peak_volume_mi": { "minimum": 15, "recommended": 25, "aggressive": 40 },
+      "long_run_cap_mi": 14,
+      "workouts": {
+        "build": [],
+        "peak": [],
+        "taper": []
+      }
+    }
+  }
+}

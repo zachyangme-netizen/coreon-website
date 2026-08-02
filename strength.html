@@ -1,0 +1,108 @@
+<!DOCTYPE html>
+<html lang="en">
+  <head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <title>Coreon Strength | Strength for Runners</title>
+    <meta
+      name="description"
+      content="Quick, focused strength sessions for runners. Built to adapt to your week, simple enough to do even on tired days."
+    />
+    <link rel="preconnect" href="https://fonts.googleapis.com" />
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
+    <link
+      href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&display=swap"
+      rel="stylesheet"
+    />
+    <link rel="stylesheet" href="styles.css" />
+  </head>
+  <body>
+    <main class="site-shell">
+      <section class="strength-page">
+        <header class="top-nav">
+          <a class="nav-brand" href="index.html" aria-label="Coreon home">Coreon</a>
+          <nav class="nav-links" aria-label="Primary navigation">
+            <a class="nav-link-haul" href="haul.html">Haul<span class="nav-badge">New</span></a>
+            <a class="nav-link-active" href="strength.html" aria-current="page">Strength</a>
+            <a class="nav-link-haul" href="runbook.html">Runbook<span class="nav-badge">New</span></a>
+            <a href="index.html#how">How it works</a>
+          </nav>
+        </header>
+
+        <div class="container strength-container">
+          <div class="haul-intro">
+            <div class="pill">Coreon Strength · for runners</div>
+            <h1>Today's workout, made for your week.</h1>
+            <p>
+              Short, focused sessions that adapt to your running. Tap any
+              exercise to start its timer, or refresh for a new workout.
+            </p>
+          </div>
+
+          <div class="app-shell strength-shell" aria-label="Coreon workout demo">
+            <div class="app-card">
+              <div class="plan-header">
+                <div>
+                  <p>Today's plan</p>
+                  <h2 id="plan-title">Post-run reset</h2>
+                </div>
+                <div class="plan-header-right">
+                  <div class="duration-badge" id="duration-badge">24 min</div>
+                  <button id="refresh-btn" type="button" aria-label="Refresh workout">↻</button>
+                </div>
+              </div>
+
+              <div class="workout-list" id="workout-list">
+                <div class="workout-row active" data-index="0">
+                  <span>Hip flexor stretch</span>
+                  <button type="button">Start</button>
+                </div>
+                <div class="workout-row" data-index="1">
+                  <span>Glute bridge hold</span>
+                  <button type="button">Start</button>
+                </div>
+                <div class="workout-row" data-index="2">
+                  <span>Single-leg RDL</span>
+                  <button type="button">Start</button>
+                </div>
+                <div class="workout-row" data-index="3">
+                  <span>Dead bug</span>
+                  <button type="button">Start</button>
+                </div>
+                <div class="workout-row" data-index="4">
+                  <span>Child's pose reset</span>
+                  <button type="button">Start</button>
+                </div>
+              </div>
+
+              <div class="demo-readout">
+                <div class="demo-timer">
+                  <span id="active-label">Hip flexor stretch</span>
+                  <strong id="timer">02:00</strong>
+                </div>
+                <div class="progress-track" aria-label="Demo progress">
+                  <span id="progress-bar"></span>
+                </div>
+              </div>
+
+              <div class="why-card">
+                <p>Why today looks like this</p>
+                <span id="why-text">
+                  You had a long run yesterday, so Coreon shifted today toward
+                  mobility, core stability, and lower fatigue work.
+                </span>
+              </div>
+            </div>
+          </div>
+
+          <p class="strength-hint">
+            Tap <strong>↻</strong> at the top right of the workout card to roll
+            a fresh one. Each session is tuned for runners — recovery, core
+            stability, hip mobility, strength, or endurance.
+          </p>
+        </div>
+      </section>
+    </main>
+    <script type="module" src="/script.js"></script>
+  </body>
+</html>

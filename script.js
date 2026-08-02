@@ -1,3 +1,5 @@
+import "/src/auth/auth-ui.js";
+
 const FALLBACK_WORKOUT = {
   title: "Post-run reset",
   duration: "24 min",

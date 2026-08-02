@@ -2,6 +2,9 @@
 // v5: M1 ships. Goal + Stats + Training + Diet collected. Result shows
 //     the calorie + macro target reveal (no AI). M2 (full haul) coming next.
 
+import "/src/auth/auth-ui.js";
+import { pushRemote, pullRemoteIfSignedIn } from "/src/lib/prefs.js";
+
 const STEPS = ["goal", "stats", "training", "diet", "result"];
 
 const STEP_META = {
@@ -32,12 +35,17 @@ function loadState() {
   }
 }
 
+// Cloud write-through stays off until the initial restore check has run, so a
+// fresh-device render can never overwrite saved preferences before we pull them.
+let syncEnabled = false;
+
 function saveState(s) {
   try {
     localStorage.setItem(STORAGE_KEY, JSON.stringify(s));
   } catch {
     // localStorage can throw in private mode — fail silently.
   }
+  if (syncEnabled) pushRemote(STORAGE_KEY, s); // no-op when signed out
 }
 
 const state = loadState();
@@ -951,15 +959,33 @@ function renderResult() {
 // Init
 // ─────────────────────────────────────────────
 
-applyGoalSelection(state.goal || null);
-applyUnitsDisplay();
-renderStatsForm();
-renderTrainingForm();
-renderDietForm();
-updateStatsGoalSummary();
-updateTrainingGoalSummary();
-updateDietGoalSummary();
-updateStatsContinue();
-updateTrainingContinue();
-updateDietContinue();
-showStep(getStepFromHash());
+function boot() {
+  applyGoalSelection(state.goal || null);
+  applyUnitsDisplay();
+  renderStatsForm();
+  renderTrainingForm();
+  renderDietForm();
+  updateStatsGoalSummary();
+  updateTrainingGoalSummary();
+  updateDietGoalSummary();
+  updateStatsContinue();
+  updateTrainingContinue();
+  updateDietContinue();
+  showStep(getStepFromHash());
+}
+
+boot();
+
+// Fresh-device restore: if signed in and this device hasn't started a haul yet
+// (no goal chosen), pull the saved preferences and re-render. In-progress local
+// work is never clobbered.
+pullRemoteIfSignedIn(STORAGE_KEY).then((remote) => {
+  if (remote && !state.goal) {
+    Object.assign(state, remote);
+    try {
+      localStorage.setItem(STORAGE_KEY, JSON.stringify(state));
+    } catch {}
+    boot();
+  }
+  syncEnabled = true; // enable cloud write-through now that restore has settled
+});
