@@ -83,6 +83,86 @@ a {
   color: var(--black);
 }
 
+/* ─────────────────────────────────────────────
+   Auth control (injected into the nav by src/auth/auth-ui.js)
+   ───────────────────────────────────────────── */
+.nav-auth {
+  display: flex;
+  align-items: center;
+  gap: 10px;
+}
+
+.nav-auth-btn {
+  font-family: inherit;
+  font-size: 0.9rem;
+  font-weight: 600;
+  color: var(--white);
+  background: var(--black);
+  border: none;
+  border-radius: var(--radius-sm);
+  padding: 8px 16px;
+  cursor: pointer;
+  transition: opacity 160ms ease;
+}
+
+.nav-auth-btn:hover {
+  opacity: 0.85;
+}
+
+.nav-auth-btn:disabled {
+  opacity: 0.5;
+  cursor: default;
+}
+
+.nav-auth-form {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+}
+
+.nav-auth-form input {
+  font-family: inherit;
+  font-size: 0.9rem;
+  padding: 7px 12px;
+  border: 1px solid var(--line);
+  border-radius: var(--radius-sm);
+  outline: none;
+  min-width: 180px;
+}
+
+.nav-auth-form input:focus {
+  border-color: var(--black);
+}
+
+.nav-auth-email {
+  font-size: 0.9rem;
+  font-weight: 500;
+  color: var(--muted);
+  max-width: 160px;
+  overflow: hidden;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+}
+
+.nav-auth-note {
+  font-size: 0.9rem;
+  font-weight: 500;
+  color: var(--muted);
+}
+
+.nav-auth-note-error {
+  color: #b00020;
+}
+
+@media (max-width: 640px) {
+  .nav-auth-email {
+    max-width: 96px;
+  }
+  .nav-auth-form input {
+    min-width: 120px;
+  }
+}
+
 .hero-grid {
   display: grid;
   grid-template-columns: 1fr;
@@ -1442,6 +1522,243 @@ p {
   border-top: 1px solid var(--line);
 }
 
+
+/* Soft contextual cross-link panel — used inside a wizard step to point at
+   a sibling tool (e.g. Runbook Step 3 → Strength). Lives between the form
+   and the actions row. */
+.haul-cross-tool-note {
+  display: flex;
+  flex-wrap: wrap;
+  align-items: center;
+  gap: 8px;
+  margin-top: 28px;
+  padding: 14px 18px;
+  border-radius: var(--radius-sm);
+  background: var(--soft);
+  color: var(--muted);
+  font-size: 0.92rem;
+  line-height: 1.55;
+}
+
+.haul-cross-tool-note a {
+  color: var(--black);
+  font-weight: 600;
+  text-decoration: underline;
+  text-underline-offset: 3px;
+  text-decoration-thickness: 1px;
+  transition: text-decoration-thickness 160ms ease;
+}
+
+.haul-cross-tool-note a:hover {
+  text-decoration-thickness: 2px;
+}
+
+/* ─────────────────────────────────────────────
+   Runbook — Step 4 result (summary card, weeks list, day rows)
+   ───────────────────────────────────────────── */
+
+.runbook-summary-card {
+  margin-top: 40px;
+  padding: 32px;
+  border-radius: var(--radius-lg);
+  background: var(--black);
+  color: var(--white);
+  box-shadow: 0 25px 50px -12px rgba(0, 0, 0, 0.25);
+}
+
+.runbook-summary-grid {
+  display: grid;
+  grid-template-columns: repeat(2, 1fr);
+  gap: 20px;
+}
+
+@media (min-width: 640px) {
+  .runbook-summary-grid {
+    grid-template-columns: repeat(4, 1fr);
+  }
+}
+
+.runbook-summary-label {
+  color: rgba(255, 255, 255, 0.55);
+  font-size: 0.72rem;
+  font-weight: 600;
+  letter-spacing: 0.16em;
+  text-transform: uppercase;
+}
+
+.runbook-summary-value {
+  margin-top: 8px;
+  font-size: 1.3rem;
+  font-weight: 600;
+  letter-spacing: -0.015em;
+  line-height: 1.25;
+}
+
+.runbook-summary-sub {
+  display: block;
+  margin-top: 2px;
+  color: rgba(255, 255, 255, 0.55);
+  font-size: 0.85rem;
+  font-weight: 400;
+  letter-spacing: 0;
+}
+
+/* This message can appear inside the dark summary card. Use light text. */
+.runbook-loading {
+  margin: 0;
+  color: rgba(255, 255, 255, 0.8);
+  font-size: 0.95rem;
+}
+
+/* Weeks list */
+.runbook-weeks {
+  display: grid;
+  gap: 12px;
+  margin-top: 16px;
+}
+
+.runbook-week {
+  border: 1px solid var(--line);
+  border-radius: var(--radius-md);
+  background: var(--white);
+  overflow: hidden;
+}
+
+.runbook-week-header {
+  display: flex;
+  align-items: center;
+  gap: 16px;
+  padding: 14px 20px;
+  border-bottom: 1px solid var(--line);
+  background: var(--soft);
+}
+
+.runbook-week-num {
+  font-weight: 600;
+  font-size: 0.95rem;
+}
+
+.runbook-week-phase {
+  flex: 1;
+  color: var(--faint);
+  font-size: 0.72rem;
+  font-weight: 700;
+  letter-spacing: 0.16em;
+  text-transform: uppercase;
+}
+
+.runbook-week-total {
+  color: var(--muted);
+  font-size: 0.9rem;
+  font-weight: 500;
+}
+
+.runbook-week-days {
+  display: grid;
+}
+
+.runbook-day {
+  display: flex;
+  align-items: flex-start;
+  gap: 16px;
+  padding: 14px 20px;
+  border-top: 1px solid var(--line);
+}
+
+.runbook-day:first-child {
+  border-top: 0;
+}
+
+.runbook-day-name {
+  flex: 0 0 48px;
+  color: var(--faint);
+  font-size: 0.78rem;
+  font-weight: 600;
+  letter-spacing: 0.08em;
+  padding-top: 2px;
+}
+
+.runbook-day-content {
+  flex: 1;
+  display: flex;
+  flex-direction: column;
+  gap: 4px;
+}
+
+.runbook-day-rest {
+  color: var(--faint);
+  align-items: center;
+}
+
+.runbook-day-rest-text {
+  color: var(--muted);
+  font-size: 0.95rem;
+  padding-top: 2px;
+}
+
+.runbook-day-label {
+  color: var(--black);
+  font-weight: 500;
+  font-size: 0.95rem;
+}
+
+.runbook-day-workout .runbook-day-label,
+.runbook-day-long .runbook-day-label {
+  font-weight: 600;
+}
+
+.runbook-day-prescription {
+  color: var(--muted);
+  font-size: 0.88rem;
+  line-height: 1.55;
+}
+
+.runbook-day-meta {
+  color: var(--faint);
+  font-size: 0.85rem;
+}
+
+@media (max-width: 560px) {
+  .runbook-summary-card {
+    padding: 24px 20px;
+  }
+  .runbook-summary-value {
+    font-size: 1.15rem;
+  }
+  .runbook-day {
+    padding: 12px 16px;
+  }
+  .runbook-day-name {
+    flex-basis: 40px;
+  }
+}
+
+/* ─────────────────────────────────────────────
+   Toast (visual-placeholder button feedback)
+   ───────────────────────────────────────────── */
+
+.haul-toast {
+  position: fixed;
+  bottom: 24px;
+  left: 50%;
+  transform: translateX(-50%);
+  max-width: calc(100% - 32px);
+  padding: 12px 22px;
+  border-radius: var(--radius-sm);
+  background: var(--black);
+  color: var(--white);
+  font-size: 0.92rem;
+  box-shadow: 0 12px 30px rgba(0, 0, 0, 0.22);
+  opacity: 0;
+  pointer-events: none;
+  transition: opacity 240ms ease;
+  z-index: 100;
+}
+
+.haul-toast.visible {
+  opacity: 1;
+}
+
 .haul-input-row {
   display: flex;
   align-items: center;
@@ -1851,6 +2168,42 @@ p {
   .haul-segment-option {
     padding: 0 12px;
   }
+}
+
+/* ─────────────────────────────────────────────
+   Strength — standalone page
+   ───────────────────────────────────────────── */
+
+.strength-page {
+  min-height: 100vh;
+}
+
+.strength-container {
+  padding-top: 56px;
+  padding-bottom: 96px;
+}
+
+@media (min-width: 768px) {
+  .strength-container {
+    padding-top: 80px;
+    padding-bottom: 120px;
+  }
+}
+
+.strength-shell {
+  margin-top: 40px;
+}
+
+.strength-hint {
+  max-width: 640px;
+  margin-top: 24px;
+  color: var(--faint);
+  font-size: 0.92rem;
+  line-height: 1.7;
+}
+
+.strength-hint strong {
+  color: var(--black);
 }
 
 /* ─────────────────────────────────────────────
