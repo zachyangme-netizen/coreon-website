@@ -34,8 +34,7 @@ describe("generateHaul", () => {
   it("scales quantities down for a shorter plan", () => {
     const week = generateHaul(TARGETS, { style: "omnivore", avoid: [], planDays: 7 });
     const three = generateHaul(TARGETS, { style: "omnivore", avoid: [], planDays: 3 });
-    const totalG = (h) =>
-      h.sections.flatMap((s) => s.items).reduce((sum, i) => sum + (i.unit === "count" ? i.qty * 50 : i.qty), 0);
+    const totalG = (h) => h.sections.flatMap((s) => s.items).reduce((sum, i) => sum + i.grams, 0);
     expect(totalG(three)).toBeLessThan(totalG(week));
   });
 
@@ -83,5 +82,29 @@ describe("generateHaul", () => {
     // so instead check protein survives; this asserts the warnings channel works.
     const haul = generateHaul(TARGETS, { style: "vegan", avoid: [], planDays: 7 });
     expect(Array.isArray(haul.warnings)).toBe(true);
+  });
+
+  // --- M3 phase 1: edit overlay (remove + quantity lock, no re-solve) ---
+
+  it("removes an item and lowers what the basket provides", () => {
+    const diet = { style: "omnivore", avoid: [], planDays: 7 };
+    const base = generateHaul(TARGETS, diet);
+    const edited = generateHaul(TARGETS, diet, undefined, { removedThisWeek: ["Chicken breast"] });
+    expect(names(edited)).not.toContain("Chicken breast");
+    // Removing a protein source drops protein; other items are NOT re-solved.
+    expect(edited.provides.protein).toBeLessThan(base.provides.protein);
+    // An untouched item keeps its base quantity (no auto-flex in phase 1).
+    const gramsOf = (h, n) => h.sections.flatMap((s) => s.items).find((i) => i.name === n)?.grams;
+    expect(gramsOf(edited, "White rice")).toBe(gramsOf(base, "White rice"));
+  });
+
+  it("honors a quantity lock and reflects it in provides", () => {
+    const diet = { style: "omnivore", avoid: [], planDays: 7 };
+    const base = generateHaul(TARGETS, diet);
+    const gramsOf = (h, n) => h.sections.flatMap((s) => s.items).find((i) => i.name === n)?.grams;
+    const bumped = gramsOf(base, "White rice") + 500;
+    const edited = generateHaul(TARGETS, diet, undefined, { locked: { "White rice": bumped } });
+    expect(gramsOf(edited, "White rice")).toBe(bumped);
+    expect(edited.provides.carbs).toBeGreaterThan(base.provides.carbs);
   });
 });

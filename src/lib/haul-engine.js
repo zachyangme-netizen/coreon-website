@@ -4,16 +4,17 @@
 // list, using the curated food set in lookups/haul-foods.json. Approach:
 //   1. Take the food set for the user's diet, drop anything on their avoid list.
 //   2. Scale each macro category (protein / carb / fat) to hit that macro's
-//      weekly target, accounting for the macro the OTHER categories contribute
-//      (carb foods carry protein, protein foods carry fat, etc.). A few
-//      fixed-point passes converge, so `provides` tracks `targets` closely.
+//      weekly target, accounting for the macro the OTHER categories contribute.
+//      A few fixed-point passes converge, so `provides` tracks `targets`.
 //   3. Produce (veg + fruit) is a fixed baseline scaled by plan length.
 //
-// The goal is already baked into the macro targets by computeTargets (protein
-// per kg, deficit/surplus, carb remainder), so it needs no separate weighting.
+// M3 phase 1 adds a literal edit overlay: after building Coreon's base picks,
+// apply the user's removals + quantity locks and recompute `provides`. No
+// re-solving yet — the meter shows the impact and the user adjusts (auto-flex
+// is phase 2). `edits = { removedThisWeek: [names], locked: {name: grams} }`.
 //
-// Pure function (no DOM, no globals) → unit-testable, and it emits the same
-// output schema the future AI path will produce, so the result UI never changes.
+// Pure function (no DOM, no globals) → unit-testable; same output schema the
+// future AI path will produce, so the result UI never changes.
 
 import defaultData from "../../lookups/haul-foods.json";
 
@@ -27,14 +28,17 @@ const MIN_ITEM_G = 25; // drop near-zero items instead of showing a token 50 g
 // {
 //   planDays,
 //   targets:  { kcalPerDay, protein, carbs, fat },   // per day, from the user
-//   provides: { kcalPerDay, protein, carbs, fat },   // what the basket delivers
-//   sections: [ { section, items: [ { name, qty, unit, display } ] } ],
+//   provides: { kcalPerDay, protein, carbs, fat },   // what the (edited) basket delivers
+//   sections: [ { section, items: [ Item ] } ],
 //   warnings: []
 // }
-export function generateHaul(targets, diet, data = defaultData) {
+// Item = { name, section, category, grams, unit, perUnitG?, per100g }
+export function generateHaul(targets, diet, data = defaultData, edits = {}) {
   const style = diet.style && data.diets[diet.style] ? diet.style : "omnivore";
   const avoid = Array.isArray(diet.avoid) ? diet.avoid : [];
   const planDays = diet.planDays || 7;
+  const removed = new Set(edits.removedThisWeek || []);
+  const locked = edits.locked || {};
 
   const basket = data.diets[style].filter(
     (f) => !f.contains.some((c) => avoid.includes(c))
@@ -43,15 +47,12 @@ export function generateHaul(targets, diet, data = defaultData) {
   const cats = { protein: [], carb: [], fat: [], veg: [], fruit: [] };
   basket.forEach((f) => (cats[f.category] || (cats[f.category] = [])).push(f));
 
-  // Weekly macro targets (grams).
   const target = {
     protein: targets.protein * planDays,
     carb: targets.carbs * planDays,
     fat: targets.fat * planDays,
   };
 
-  // Produce is a fixed baseline (always buy your greens/fruit); everything else
-  // starts at 1× and gets solved below.
   const dayScale = planDays / 7;
   const factor = { veg: dayScale, fruit: dayScale, protein: 1, carb: 1, fat: 1 };
 
@@ -78,19 +79,25 @@ export function generateHaul(targets, diet, data = defaultData) {
     }
   }
 
+  // Coreon's base picks, then the literal edit overlay.
   const items = basket
-    .map((f) => ({ food: f, rawG: f.baseQtyG * (factor[f.category] ?? 0) }))
-    .filter((x) => x.rawG >= MIN_ITEM_G)
-    .map((x) => ({ food: x.food, ...displayQty(x.rawG, x.food) }));
+    .map((f) => ({ food: f, grams: roundGrams(f.baseQtyG * (factor[f.category] ?? 0), f) }))
+    .filter((x) => x.grams >= MIN_ITEM_G)
+    .filter((x) => !removed.has(x.food.name))
+    .map((x) =>
+      locked[x.food.name] != null
+        ? { food: x.food, grams: roundGrams(locked[x.food.name], x.food) }
+        : x
+    )
+    .map((x) => toItem(x.food, x.grams));
 
   const totals = items.reduce(
     (acc, it) => {
-      const p = it.food.per100g;
       const g = it.grams / 100;
-      acc.kcal += p.kcal * g;
-      acc.protein += p.protein * g;
-      acc.carbs += p.carbs * g;
-      acc.fat += p.fat * g;
+      acc.kcal += it.per100g.kcal * g;
+      acc.protein += it.per100g.protein * g;
+      acc.carbs += it.per100g.carbs * g;
+      acc.fat += it.per100g.fat * g;
       return acc;
     },
     { kcal: 0, protein: 0, carbs: 0, fat: 0 }
@@ -103,14 +110,7 @@ export function generateHaul(targets, diet, data = defaultData) {
   };
 
   const bySection = {};
-  for (const it of items) {
-    (bySection[it.food.section] ||= []).push({
-      name: it.food.name,
-      qty: it.qty,
-      unit: it.unit,
-      display: it.display,
-    });
-  }
+  for (const it of items) (bySection[it.section] ||= []).push(it);
   const sections = SECTION_ORDER.filter((s) => bySection[s]?.length).map((s) => ({
     section: s,
     items: bySection[s],
@@ -137,21 +137,24 @@ export function generateHaul(targets, diet, data = defaultData) {
   };
 }
 
-// Convert a raw gram amount into a shopper-friendly quantity + label.
-// Returns { grams, qty, unit, display } — `grams` is the rounded amount used
-// for the provides math; `display` is the metric label (the UI re-labels for
-// the kg/lb toggle).
-function displayQty(grams, food) {
+// Round a raw gram amount to a shopper-friendly quantity in canonical grams.
+// (Count items store grams = count × perUnitG so the macro math stays uniform.)
+function roundGrams(raw, food) {
   if (food.unit === "count") {
     const per = food.perUnitG || 50;
-    const n = Math.max(1, Math.round(grams / per));
-    return { grams: n * per, qty: n, unit: "count", display: `${n}` };
+    return Math.max(1, Math.round(raw / per)) * per;
   }
-  const unit = food.unit === "ml" ? "ml" : "g";
-  const g = Math.max(50, Math.round(grams / 50) * 50);
-  if (unit === "g" && g >= 1000) {
-    const kg = Math.round(g / 100) / 10; // one decimal place
-    return { grams: g, qty: g, unit: "g", display: `${kg} kg` };
-  }
-  return { grams: g, qty: g, unit, display: `${g} ${unit}` };
+  return Math.max(50, Math.round(raw / 50) * 50);
+}
+
+function toItem(food, grams) {
+  return {
+    name: food.name,
+    section: food.section,
+    category: food.category,
+    grams,
+    unit: food.unit || "g",
+    perUnitG: food.perUnitG,
+    per100g: food.per100g,
+  };
 }
