@@ -600,9 +600,9 @@
               <div class="pill">Coreon Haul · your targets</div>
               <h1>Here's what to eat for, every day.</h1>
               <p>
-                Built from your goal, stats, and training. The full meal
-                plan + grocery list is coming next — these targets are the
-                foundation everything else sits on.
+                Built from your goal, stats, and training — with a weekly
+                grocery list scaled to hit it. Personalized meal plans and
+                recipes come next.
               </p>
             </div>
 
@@ -632,6 +632,20 @@
                   </p>
                 </div>
               </div>
+            </div>
+
+            <div class="haul-list-card">
+              <p class="haul-print-brand">Coreon · Weekly Haul</p>
+              <div class="haul-list-head">
+                <h2>Your weekly haul</h2>
+                <div class="haul-segment haul-units-seg" role="radiogroup" aria-label="Weight units">
+                  <button type="button" class="haul-segment-option" data-haul-units="metric" role="radio" aria-checked="false">kg</button>
+                  <button type="button" class="haul-segment-option" data-haul-units="imperial" role="radio" aria-checked="false">lb</button>
+                </div>
+              </div>
+              <p class="haul-list-sub" id="haul-list-sub">—</p>
+              <div class="haul-list" id="haul-list"></div>
+              <p class="haul-list-foot" id="haul-list-foot"></p>
             </div>
 
             <div class="haul-why-card">
@@ -674,11 +688,12 @@
             </details>
 
             <p class="haul-result-note" id="result-diet-note">
-              Diet preferences saved — they'll shape the meal plan when the
-              full haul comes online.
+              Your diet style and avoid list shape this haul. Meal plans and
+              recipes for these ingredients come next.
             </p>
 
             <div class="haul-actions haul-result-actions">
+              <button type="button" class="button button-light" id="haul-print-btn">Print / Save as PDF</button>
               <a class="button button-light" href="#goal">Edit my inputs</a>
               <a class="button button-dark" href="index.html">Back to Coreon</a>
             </div>
