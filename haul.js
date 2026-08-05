@@ -64,6 +64,10 @@ if (state.diet.avoidOther == null)    state.diet.avoidOther = "";
 if (state.diet.notes == null)         state.diet.notes = "";
 // Grocery-list weight units default to the same system the user picked for stats.
 if (!state.haulUnits) state.haulUnits = state.stats.units === "metric" ? "metric" : "imperial";
+// Haul edit overlay (M3): user tweaks applied on top of Coreon's base picks.
+if (!state.haulEdits || typeof state.haulEdits !== "object") state.haulEdits = {};
+if (!state.haulEdits.locked || typeof state.haulEdits.locked !== "object") state.haulEdits.locked = {};
+if (!Array.isArray(state.haulEdits.removedThisWeek)) state.haulEdits.removedThisWeek = [];
 
 // ─────────────────────────────────────────────
 // Unit conversion
@@ -968,7 +972,12 @@ function renderResult() {
 const haulListEl   = document.getElementById("haul-list");
 const haulListSub  = document.getElementById("haul-list-sub");
 const haulListFoot = document.getElementById("haul-list-foot");
+const haulMeterEl  = document.getElementById("haul-meter");
+const haulResetBtn = document.getElementById("haul-reset");
 const haulUnitOptions = Array.from(document.querySelectorAll("[data-haul-units]"));
+
+// Last rendered haul, so edit handlers can look up an item's current grams.
+let currentHaul = null;
 
 function applyHaulUnits() {
   haulUnitOptions.forEach((btn) => {
@@ -983,17 +992,18 @@ function applyHaulUnits() {
 // through, converting to fl oz under imperial.
 function formatHaulQty(item) {
   const imperial = state.haulUnits === "imperial";
-  if (item.unit === "count") return `${item.qty}`;
+  const g = item.grams;
+  if (item.unit === "count") return `${Math.round(g / (item.perUnitG || 50))}`;
   if (item.unit === "ml") {
-    if (imperial) return `${Math.round(item.qty / 29.5735)} fl oz`;
-    return item.qty >= 1000 ? `${(item.qty / 1000).toFixed(1)} L` : `${item.qty} ml`;
+    if (imperial) return `${Math.round(g / 29.5735)} fl oz`;
+    return g >= 1000 ? `${(g / 1000).toFixed(1)} L` : `${g} ml`;
   }
   if (imperial) {
-    const oz = item.qty / 28.3495;
+    const oz = g / 28.3495;
     // Round first so ~450 g reads "1.0 lb", not "16 oz".
     return Math.round(oz) >= 16 ? `${(oz / 16).toFixed(1)} lb` : `${Math.round(oz)} oz`;
   }
-  return item.qty >= 1000 ? `${(item.qty / 1000).toFixed(1)} kg` : `${item.qty} g`;
+  return g >= 1000 ? `${(g / 1000).toFixed(1)} kg` : `${g} g`;
 }
 
 haulUnitOptions.forEach((btn) => {
@@ -1026,6 +1036,14 @@ if (haulPrintBtn) {
   });
 }
 
+if (haulResetBtn) {
+  haulResetBtn.addEventListener("click", () => {
+    state.haulEdits = { locked: {}, removedThisWeek: [] };
+    saveState(state);
+    if (state.goal) renderHaul(computeTargets());
+  });
+}
+
 const HAUL_CHECK_KEY = "coreon-haul-checked";
 
 function loadChecked() {
@@ -1042,18 +1060,75 @@ function haulSlug(name) {
   return "haul-" + name.replace(/[^a-z0-9]+/gi, "-").toLowerCase();
 }
 
+// Signature of the inputs behind the base list. When it changes (goal, stats,
+// diet), the base regenerates and any per-list edits are reset.
+function haulEditKey(t) {
+  return JSON.stringify([
+    t.target, t.protein, t.carbs, t.fat,
+    state.diet.style || "omnivore",
+    [...(state.diet.avoid || [])].sort(),
+    state.diet.planDays,
+  ]);
+}
+
+// Stepper increment (canonical grams) by item kind.
+function haulStep(item) {
+  if (item.unit === "count") return item.perUnitG || 50;
+  if (item.unit === "ml") return 10;
+  return 50;
+}
+
+// The live "are you still hitting the goal?" meter.
+function renderMeter(haul) {
+  if (!haulMeterEl) return;
+  const rows = [
+    ["Protein", haul.provides.protein, haul.targets.protein, "g"],
+    ["Carbs", haul.provides.carbs, haul.targets.carbs, "g"],
+    ["Fat", haul.provides.fat, haul.targets.fat, "g"],
+    ["Calories", haul.provides.kcalPerDay, haul.targets.kcalPerDay, ""],
+  ];
+  haulMeterEl.innerHTML = rows
+    .map(([label, prov, tgt, unit]) => {
+      const ratio = tgt > 0 ? prov / tgt : 1;
+      const status = ratio > 1.08 ? "over" : ratio < 0.92 ? "under" : "ok";
+      const pct = Math.max(0, Math.min(ratio, 1)) * 100;
+      const delta = prov - tgt;
+      const note =
+        status === "ok"
+          ? "on target"
+          : `${delta > 0 ? "+" : "−"}${Math.abs(delta)}${unit} ${delta > 0 ? "over" : "under"}`;
+      return (
+        `<div class="haul-meter-row haul-meter-${status}">` +
+        `<span class="haul-meter-label">${label}</span>` +
+        `<span class="haul-meter-track"><span style="width:${pct}%"></span></span>` +
+        `<span class="haul-meter-val">${prov}${unit ? " " + unit : ""} <em>${note}</em></span>` +
+        `</div>`
+      );
+    })
+    .join("");
+}
+
 function renderHaul(t) {
   if (!haulListEl) return;
 
-  const haul = generateHaul(t, state.diet);
+  // Reset per-list edits when the inputs behind the base list change.
+  const key = haulEditKey(t);
+  if (state.haulEditsKey !== key) {
+    state.haulEdits = { locked: {}, removedThisWeek: [] };
+    state.haulEditsKey = key;
+    saveState(state);
+  }
+
+  const haul = generateHaul(t, state.diet, undefined, state.haulEdits);
+  currentHaul = haul;
   const checked = loadChecked();
-  const p = haul.provides;
 
   applyHaulUnits();
 
   haulListSub.textContent =
-    `${haul.planDays}-day haul · about ${formatNumber(p.kcalPerDay)} kcal a day · ` +
-    `${p.protein}g protein · ${p.carbs}g carbs · ${p.fat}g fat`;
+    `${haul.planDays}-day haul · about ${formatNumber(haul.provides.kcalPerDay)} kcal a day`;
+
+  renderMeter(haul);
 
   haulListEl.innerHTML = haul.sections
     .map(
@@ -1065,11 +1140,18 @@ function renderHaul(t) {
             const id = haulSlug(it.name);
             const on = checked[it.name] ? " checked" : "";
             return (
-              `<label class="haul-row${on}" for="${id}">` +
+              `<div class="haul-row${on}" data-food="${it.name}">` +
+              `<label class="haul-row-check" for="${id}">` +
               `<input type="checkbox" id="${id}" data-food="${it.name}"${on} />` +
               `<span class="haul-row-name">${it.name}</span>` +
+              `</label>` +
+              `<div class="haul-row-controls">` +
+              `<button type="button" class="haul-qty-btn" data-food="${it.name}" data-dir="-1" aria-label="Less ${it.name}">−</button>` +
               `<span class="haul-row-qty">${formatHaulQty(it)}</span>` +
-              `</label>`
+              `<button type="button" class="haul-qty-btn" data-food="${it.name}" data-dir="1" aria-label="More ${it.name}">+</button>` +
+              `<button type="button" class="haul-remove" data-food="${it.name}" aria-label="Remove ${it.name}">✕</button>` +
+              `</div>` +
+              `</div>`
             );
           })
           .join("") +
@@ -1077,6 +1159,7 @@ function renderHaul(t) {
     )
     .join("");
 
+  // Check-off (persists per device).
   haulListEl.querySelectorAll('input[type="checkbox"]').forEach((cb) => {
     cb.addEventListener("change", () => {
       const map = loadChecked();
@@ -1087,9 +1170,41 @@ function renderHaul(t) {
     });
   });
 
+  // Quantity steppers — locking the item at the new amount.
+  haulListEl.querySelectorAll(".haul-qty-btn").forEach((btn) => {
+    btn.addEventListener("click", () => {
+      const name = btn.dataset.food;
+      const dir = Number(btn.dataset.dir);
+      const item = currentHaul.sections.flatMap((s) => s.items).find((i) => i.name === name);
+      if (!item) return;
+      const step = haulStep(item);
+      state.haulEdits.locked[name] = Math.max(step, item.grams + dir * step);
+      saveState(state);
+      renderHaul(computeTargets());
+    });
+  });
+
+  // Remove (this week only in phase 1).
+  haulListEl.querySelectorAll(".haul-remove").forEach((btn) => {
+    btn.addEventListener("click", () => {
+      const name = btn.dataset.food;
+      if (!state.haulEdits.removedThisWeek.includes(name)) {
+        state.haulEdits.removedThisWeek.push(name);
+      }
+      delete state.haulEdits.locked[name];
+      saveState(state);
+      renderHaul(computeTargets());
+    });
+  });
+
+  const edited =
+    Object.keys(state.haulEdits.locked).length > 0 ||
+    state.haulEdits.removedThisWeek.length > 0;
+  if (haulResetBtn) haulResetBtn.hidden = !edited;
+
   haulListFoot.textContent = haul.warnings.length
     ? haul.warnings.join(" ")
-    : "Amounts are rounded for easy shopping. Check items off as you go — your list stays saved on this device.";
+    : "Adjust amounts or remove items — the meter shows how your list tracks your targets. Saved on this device.";
 }
 
 // ─────────────────────────────────────────────

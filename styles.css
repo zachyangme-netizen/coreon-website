@@ -2058,20 +2058,24 @@ p {
 .haul-row {
   display: flex;
   align-items: center;
-  gap: 12px;
-  padding: 12px 14px;
+  gap: 10px;
+  padding: 10px 12px;
   margin-bottom: 8px;
   border: 1px solid var(--line);
   border-radius: var(--radius-sm);
-  cursor: pointer;
   transition: background 140ms ease, opacity 140ms ease;
 }
 
-.haul-row:hover {
-  background: var(--soft);
+.haul-row-check {
+  display: flex;
+  align-items: center;
+  gap: 12px;
+  flex: 1;
+  min-width: 0;
+  cursor: pointer;
 }
 
-.haul-row input {
+.haul-row-check input {
   flex: none;
   width: 18px;
   height: 18px;
@@ -2080,14 +2084,58 @@ p {
 }
 
 .haul-row-name {
-  flex: 1;
   font-weight: 500;
+  overflow: hidden;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+}
+
+.haul-row-controls {
+  display: flex;
+  align-items: center;
+  gap: 6px;
+  flex: none;
 }
 
 .haul-row-qty {
+  min-width: 60px;
+  text-align: right;
   color: var(--muted);
   font-weight: 600;
   font-variant-numeric: tabular-nums;
+}
+
+.haul-qty-btn,
+.haul-remove {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  width: 28px;
+  height: 28px;
+  border: 1px solid var(--line);
+  border-radius: 8px;
+  background: var(--white);
+  color: var(--muted);
+  font-size: 1rem;
+  line-height: 1;
+  cursor: pointer;
+  transition: background 140ms ease, color 140ms ease, border-color 140ms ease;
+}
+
+.haul-qty-btn:hover,
+.haul-remove:hover {
+  background: var(--soft);
+  color: var(--black);
+}
+
+.haul-remove {
+  margin-left: 4px;
+  font-size: 0.8rem;
+}
+
+.haul-remove:hover {
+  border-color: #b00020;
+  color: #b00020;
 }
 
 .haul-row.checked {
@@ -2096,6 +2144,78 @@ p {
 
 .haul-row.checked .haul-row-name {
   text-decoration: line-through;
+}
+
+/* Live target meter — provides vs. target as you edit */
+.haul-meter {
+  display: grid;
+  gap: 8px;
+  margin-bottom: 22px;
+}
+
+.haul-meter-row {
+  display: grid;
+  grid-template-columns: 66px 1fr auto;
+  align-items: center;
+  gap: 12px;
+  font-size: 0.85rem;
+}
+
+.haul-meter-label {
+  font-weight: 600;
+  color: var(--muted);
+}
+
+.haul-meter-track {
+  height: 6px;
+  border-radius: 999px;
+  background: var(--soft);
+  overflow: hidden;
+}
+
+.haul-meter-track > span {
+  display: block;
+  height: 100%;
+  background: var(--black);
+  transition: width 220ms ease;
+}
+
+.haul-meter-val {
+  font-variant-numeric: tabular-nums;
+  font-weight: 600;
+  white-space: nowrap;
+}
+
+.haul-meter-val em {
+  margin-left: 6px;
+  font-style: normal;
+  font-weight: 500;
+  color: var(--faint);
+}
+
+.haul-meter-over .haul-meter-track > span { background: #c8791a; }
+.haul-meter-over .haul-meter-val em { color: #c8791a; }
+.haul-meter-under .haul-meter-track > span { background: #9aa0a6; }
+.haul-meter-under .haul-meter-val em { color: #7a7f85; }
+
+/* Reset edits back to Coreon's picks */
+.haul-reset {
+  margin-top: 14px;
+  padding: 8px 14px;
+  border: 1px solid var(--line);
+  border-radius: var(--radius-sm);
+  background: var(--white);
+  color: var(--muted);
+  font-family: inherit;
+  font-size: 0.85rem;
+  font-weight: 600;
+  cursor: pointer;
+  transition: background 140ms ease, color 140ms ease;
+}
+
+.haul-reset:hover {
+  background: var(--soft);
+  color: var(--black);
 }
 
 .haul-list-foot {
@@ -2124,7 +2244,11 @@ p {
   .haul-result-note,
   .haul-result-actions,
   .haul-units-seg,
-  .haul-list-foot {
+  .haul-list-foot,
+  .haul-meter,
+  .haul-reset,
+  .haul-qty-btn,
+  .haul-remove {
     display: none !important;
   }
 
