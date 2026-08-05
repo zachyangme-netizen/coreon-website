@@ -1,10 +1,16 @@
 // Deterministic Haul generator.
 //
 // Turns the daily macro targets from `computeTargets()` into a weekly grocery
-// list, using the curated baskets in lookups/haul-foods.json. Approach:
+// list, using the curated food set in lookups/haul-foods.json. Approach:
 //   1. Take the food set for the user's diet, drop anything on their avoid list.
-//   2. Re-weight base quantities by the goal (e.g. lose-fat → more protein/veg).
-//   3. Scale the whole basket so its calories ≈ the user's weekly target.
+//   2. Scale each macro category (protein / carb / fat) to hit that macro's
+//      weekly target, accounting for the macro the OTHER categories contribute
+//      (carb foods carry protein, protein foods carry fat, etc.). A few
+//      fixed-point passes converge, so `provides` tracks `targets` closely.
+//   3. Produce (veg + fruit) is a fixed baseline scaled by plan length.
+//
+// The goal is already baked into the macro targets by computeTargets (protein
+// per kg, deficit/surplus, carb remainder), so it needs no separate weighting.
 //
 // Pure function (no DOM, no globals) → unit-testable, and it emits the same
 // output schema the future AI path will produce, so the result UI never changes.
@@ -12,7 +18,10 @@
 import defaultData from "../../lookups/haul-foods.json";
 
 const SECTION_ORDER = ["Produce", "Protein", "Dairy", "Pantry", "Frozen", "Other"];
-const NEUTRAL_WEIGHTS = { protein: 1, carb: 1, fat: 1, veg: 1, fruit: 1 };
+const MACRO_CATS = ["protein", "carb", "fat"];
+const MACRO_PROP = { protein: "protein", carb: "carbs", fat: "fat" };
+const PASSES = 4;
+const MIN_ITEM_G = 25; // drop near-zero items instead of showing a token 50 g
 
 // Output schema (shared with the eventual AI generator):
 // {
@@ -26,32 +35,53 @@ export function generateHaul(targets, diet, data = defaultData) {
   const style = diet.style && data.diets[diet.style] ? diet.style : "omnivore";
   const avoid = Array.isArray(diet.avoid) ? diet.avoid : [];
   const planDays = diet.planDays || 7;
-  const weights = data.goalWeights[targets.goal] || NEUTRAL_WEIGHTS;
 
   const basket = data.diets[style].filter(
     (f) => !f.contains.some((c) => avoid.includes(c))
   );
 
-  // 1. Goal-weighted base quantities.
-  const weighted = basket.map((f) => ({
-    food: f,
-    qtyG: f.baseQtyG * (weights[f.category] ?? 1),
-  }));
+  const cats = { protein: [], carb: [], fat: [], veg: [], fruit: [] };
+  basket.forEach((f) => (cats[f.category] || (cats[f.category] = [])).push(f));
 
-  // 2. Scale so the basket's calories match the weekly target.
-  const weightedWeeklyKcal = weighted.reduce(
-    (sum, w) => sum + (w.qtyG * w.food.per100g.kcal) / 100,
-    0
-  );
-  const targetWeeklyKcal = targets.target * planDays;
-  const scale = weightedWeeklyKcal > 0 ? targetWeeklyKcal / weightedWeeklyKcal : 1;
+  // Weekly macro targets (grams).
+  const target = {
+    protein: targets.protein * planDays,
+    carb: targets.carbs * planDays,
+    fat: targets.fat * planDays,
+  };
 
-  // 3. Round to shopper-friendly amounts; keep the rounded grams for the
-  //    "what it provides" math so the footer is honest.
-  const items = weighted.map((w) => {
-    const disp = displayQty(w.qtyG * scale, w.food);
-    return { food: w.food, ...disp };
-  });
+  // Produce is a fixed baseline (always buy your greens/fruit); everything else
+  // starts at 1× and gets solved below.
+  const dayScale = planDays / 7;
+  const factor = { veg: dayScale, fruit: dayScale, protein: 1, carb: 1, fat: 1 };
+
+  const macroAt = (cat, prop) =>
+    cats[cat].reduce(
+      (s, f) => s + (f.baseQtyG * factor[cat] * (f.per100g[prop] || 0)) / 100,
+      0
+    );
+  const baseMacro = (cat, prop) =>
+    cats[cat].reduce((s, f) => s + (f.baseQtyG * (f.per100g[prop] || 0)) / 100, 0);
+
+  // Fixed-point solve: size each macro category to its target minus what the
+  // other categories already supply of that macro.
+  for (let pass = 0; pass < PASSES; pass++) {
+    for (const cat of MACRO_CATS) {
+      const prop = MACRO_PROP[cat];
+      let fromOthers = 0;
+      for (const other of ["protein", "carb", "fat", "veg", "fruit"]) {
+        if (other !== cat) fromOthers += macroAt(other, prop);
+      }
+      const need = Math.max(target[cat] - fromOthers, 0);
+      const base = baseMacro(cat, prop);
+      factor[cat] = base > 0 ? need / base : 0;
+    }
+  }
+
+  const items = basket
+    .map((f) => ({ food: f, rawG: f.baseQtyG * (factor[f.category] ?? 0) }))
+    .filter((x) => x.rawG >= MIN_ITEM_G)
+    .map((x) => ({ food: x.food, ...displayQty(x.rawG, x.food) }));
 
   const totals = items.reduce(
     (acc, it) => {
@@ -72,7 +102,6 @@ export function generateHaul(targets, diet, data = defaultData) {
     fat: Math.round(totals.fat / planDays),
   };
 
-  // Group by store section, in aisle order.
   const bySection = {};
   for (const it of items) {
     (bySection[it.food.section] ||= []).push({
@@ -88,8 +117,8 @@ export function generateHaul(targets, diet, data = defaultData) {
   }));
 
   const warnings = [];
-  for (const cat of ["protein", "carb", "fat"]) {
-    if (!basket.some((f) => f.category === cat)) {
+  for (const cat of MACRO_CATS) {
+    if (!cats[cat].length) {
       warnings.push(`No ${cat} sources left after your avoid list — the basket may fall short on ${cat}.`);
     }
   }
@@ -110,7 +139,8 @@ export function generateHaul(targets, diet, data = defaultData) {
 
 // Convert a raw gram amount into a shopper-friendly quantity + label.
 // Returns { grams, qty, unit, display } — `grams` is the rounded amount used
-// for the provides math; `display` is what the UI shows.
+// for the provides math; `display` is the metric label (the UI re-labels for
+// the kg/lb toggle).
 function displayQty(grams, food) {
   if (food.unit === "count") {
     const per = food.perUnitG || 50;
