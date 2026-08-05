@@ -4,7 +4,7 @@ import { generateHaul } from "./haul-engine.js";
 // A realistic set of targets from computeTargets() (fuel-performance runner).
 const TARGETS = {
   goal: "fuel-performance",
-  target: 2400,
+  target: 2310, // consistent with the macros below (120*4 + 300*4 + 70*9)
   protein: 120,
   carbs: 300,
   fat: 70,
@@ -61,11 +61,19 @@ describe("generateHaul", () => {
     expect(n).toContain("Firm tofu");
   });
 
-  it("shifts the protein/carb mix by goal", () => {
+  it("hits each macro target within ~15%", () => {
+    const haul = generateHaul(TARGETS, { style: "omnivore", avoid: [], planDays: 7 });
+    for (const [key, tgt] of [["protein", TARGETS.protein], ["carbs", TARGETS.carbs], ["fat", TARGETS.fat]]) {
+      const drift = Math.abs(haul.provides[key] - tgt) / tgt;
+      expect(drift, `${key} drifted too far`).toBeLessThan(0.15);
+    }
+  });
+
+  it("tracks the macro targets the goal produces (lose-fat leans protein)", () => {
     const base = { style: "omnivore", avoid: [], planDays: 7 };
-    const lose = generateHaul({ ...TARGETS, goal: "lose-fat" }, base);
-    const fuel = generateHaul({ ...TARGETS, goal: "fuel-performance" }, base);
-    // Same calories, but lose-fat leans more protein than fuel-performance.
+    // computeTargets encodes the goal: fat-loss = more protein, fewer carbs.
+    const lose = generateHaul({ goal: "lose-fat", target: 1980, protein: 150, carbs: 165, fat: 60 }, base);
+    const fuel = generateHaul({ goal: "fuel-performance", target: 2600, protein: 118, carbs: 330, fat: 75 }, base);
     const pRatio = (h) => h.provides.protein / h.provides.carbs;
     expect(pRatio(lose)).toBeGreaterThan(pRatio(fuel));
   });

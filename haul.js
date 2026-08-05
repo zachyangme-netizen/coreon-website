@@ -990,7 +990,8 @@ function formatHaulQty(item) {
   }
   if (imperial) {
     const oz = item.qty / 28.3495;
-    return oz >= 16 ? `${(oz / 16).toFixed(1)} lb` : `${Math.round(oz)} oz`;
+    // Round first so ~450 g reads "1.0 lb", not "16 oz".
+    return Math.round(oz) >= 16 ? `${(oz / 16).toFixed(1)} lb` : `${Math.round(oz)} oz`;
   }
   return item.qty >= 1000 ? `${(item.qty / 1000).toFixed(1)} kg` : `${item.qty} g`;
 }

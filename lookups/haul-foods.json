@@ -1,11 +1,5 @@
 {
-  "_note": "Curated Haul baskets. One food set per diet; the goal re-weights category proportions and everything scales to the user's calorie target (see src/lib/haul-engine.js). per100g macros are approximate, used to (a) scale to the target and (b) show what the basket actually provides. contains[] uses the exact avoid-chip values: dairy, eggs, gluten, mushrooms, nuts, pork, shellfish. category ∈ protein|carb|fat|veg|fruit.",
-
-  "goalWeights": {
-    "lose-fat":         { "protein": 1.15, "carb": 0.80, "fat": 0.85, "veg": 1.25, "fruit": 1.00 },
-    "gain-muscle":      { "protein": 1.20, "carb": 1.15, "fat": 1.00, "veg": 1.00, "fruit": 1.00 },
-    "fuel-performance": { "protein": 1.00, "carb": 1.10, "fat": 1.00, "veg": 1.00, "fruit": 1.10 }
-  },
+  "_note": "Curated Haul food sets, one per diet. The engine (src/lib/haul-engine.js) scales each macro category (protein/carb/fat) to hit the user's computed macro target; produce (veg/fruit) is a fixed baseline scaled by plan length. The goal is already reflected in the macro targets, so no per-goal weighting lives here. per100g macros are approximate. contains[] uses the exact avoid-chip values: dairy, eggs, gluten, mushrooms, nuts, pork, shellfish. category ∈ protein|carb|fat|veg|fruit.",
 
   "diets": {
     "omnivore": [
