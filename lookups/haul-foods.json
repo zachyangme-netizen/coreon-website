@@ -1,0 +1,74 @@
+{
+  "_note": "Curated Haul baskets. One food set per diet; the goal re-weights category proportions and everything scales to the user's calorie target (see src/lib/haul-engine.js). per100g macros are approximate, used to (a) scale to the target and (b) show what the basket actually provides. contains[] uses the exact avoid-chip values: dairy, eggs, gluten, mushrooms, nuts, pork, shellfish. category ∈ protein|carb|fat|veg|fruit.",
+
+  "goalWeights": {
+    "lose-fat":         { "protein": 1.15, "carb": 0.80, "fat": 0.85, "veg": 1.25, "fruit": 1.00 },
+    "gain-muscle":      { "protein": 1.20, "carb": 1.15, "fat": 1.00, "veg": 1.00, "fruit": 1.00 },
+    "fuel-performance": { "protein": 1.00, "carb": 1.10, "fat": 1.00, "veg": 1.00, "fruit": 1.10 }
+  },
+
+  "diets": {
+    "omnivore": [
+      { "name": "Chicken breast",    "section": "Protein", "category": "protein", "baseQtyG": 1200, "per100g": { "kcal": 165, "protein": 31,   "carbs": 0,    "fat": 3.6 }, "contains": [] },
+      { "name": "Lean beef mince",   "section": "Protein", "category": "protein", "baseQtyG": 500,  "per100g": { "kcal": 250, "protein": 26,   "carbs": 0,    "fat": 15  }, "contains": [] },
+      { "name": "Eggs",              "section": "Protein", "category": "protein", "baseQtyG": 600,  "per100g": { "kcal": 155, "protein": 13,   "carbs": 1.1,  "fat": 11  }, "contains": ["eggs"], "unit": "count", "perUnitG": 50 },
+      { "name": "Greek yogurt, 2%",  "section": "Dairy",   "category": "protein", "baseQtyG": 1000, "per100g": { "kcal": 73,  "protein": 10,   "carbs": 4,    "fat": 2   }, "contains": ["dairy"] },
+      { "name": "Rolled oats",       "section": "Pantry",  "category": "carb",    "baseQtyG": 700,  "per100g": { "kcal": 379, "protein": 13,   "carbs": 67,   "fat": 7   }, "contains": [] },
+      { "name": "White rice",        "section": "Pantry",  "category": "carb",    "baseQtyG": 700,  "per100g": { "kcal": 360, "protein": 7,    "carbs": 79,   "fat": 1   }, "contains": [] },
+      { "name": "Sweet potato",      "section": "Produce", "category": "carb",    "baseQtyG": 1200, "per100g": { "kcal": 86,  "protein": 1.6,  "carbs": 20,   "fat": 0.1 }, "contains": [] },
+      { "name": "Whole-grain bread", "section": "Pantry",  "category": "carb",    "baseQtyG": 400,  "per100g": { "kcal": 250, "protein": 9,    "carbs": 45,   "fat": 3   }, "contains": ["gluten"] },
+      { "name": "Banana",            "section": "Produce", "category": "carb",    "baseQtyG": 700,  "per100g": { "kcal": 89,  "protein": 1.1,  "carbs": 23,   "fat": 0.3 }, "contains": [] },
+      { "name": "Olive oil",         "section": "Pantry",  "category": "fat",     "baseQtyG": 150,  "per100g": { "kcal": 884, "protein": 0,    "carbs": 0,    "fat": 100 }, "contains": [], "unit": "ml" },
+      { "name": "Peanut butter",     "section": "Pantry",  "category": "fat",     "baseQtyG": 250,  "per100g": { "kcal": 588, "protein": 25,   "carbs": 20,   "fat": 50  }, "contains": ["nuts"] },
+      { "name": "Almonds",           "section": "Pantry",  "category": "fat",     "baseQtyG": 150,  "per100g": { "kcal": 579, "protein": 21,   "carbs": 22,   "fat": 49  }, "contains": ["nuts"] },
+      { "name": "Spinach",           "section": "Produce", "category": "veg",     "baseQtyG": 400,  "per100g": { "kcal": 23,  "protein": 2.9,  "carbs": 3.6,  "fat": 0.4 }, "contains": [] },
+      { "name": "Broccoli",          "section": "Produce", "category": "veg",     "baseQtyG": 600,  "per100g": { "kcal": 34,  "protein": 2.8,  "carbs": 7,    "fat": 0.4 }, "contains": [] },
+      { "name": "Bell pepper",       "section": "Produce", "category": "veg",     "baseQtyG": 400,  "per100g": { "kcal": 31,  "protein": 1,    "carbs": 6,    "fat": 0.3 }, "contains": [] },
+      { "name": "Blueberries",       "section": "Produce", "category": "fruit",   "baseQtyG": 400,  "per100g": { "kcal": 57,  "protein": 0.7,  "carbs": 14,   "fat": 0.3 }, "contains": [] },
+      { "name": "Apple",             "section": "Produce", "category": "fruit",   "baseQtyG": 600,  "per100g": { "kcal": 52,  "protein": 0.3,  "carbs": 14,   "fat": 0.2 }, "contains": [] }
+    ],
+
+    "vegetarian": [
+      { "name": "Eggs",              "section": "Protein", "category": "protein", "baseQtyG": 800,  "per100g": { "kcal": 155, "protein": 13,   "carbs": 1.1,  "fat": 11  }, "contains": ["eggs"], "unit": "count", "perUnitG": 50 },
+      { "name": "Greek yogurt, 2%",  "section": "Dairy",   "category": "protein", "baseQtyG": 1200, "per100g": { "kcal": 73,  "protein": 10,   "carbs": 4,    "fat": 2   }, "contains": ["dairy"] },
+      { "name": "Cottage cheese",    "section": "Dairy",   "category": "protein", "baseQtyG": 600,  "per100g": { "kcal": 98,  "protein": 11,   "carbs": 3,    "fat": 4   }, "contains": ["dairy"] },
+      { "name": "Firm tofu",         "section": "Protein", "category": "protein", "baseQtyG": 600,  "per100g": { "kcal": 144, "protein": 17,   "carbs": 3,    "fat": 8   }, "contains": [] },
+      { "name": "Lentils, dry",      "section": "Pantry",  "category": "protein", "baseQtyG": 400,  "per100g": { "kcal": 352, "protein": 25,   "carbs": 63,   "fat": 1   }, "contains": [] },
+      { "name": "Rolled oats",       "section": "Pantry",  "category": "carb",    "baseQtyG": 700,  "per100g": { "kcal": 379, "protein": 13,   "carbs": 67,   "fat": 7   }, "contains": [] },
+      { "name": "White rice",        "section": "Pantry",  "category": "carb",    "baseQtyG": 700,  "per100g": { "kcal": 360, "protein": 7,    "carbs": 79,   "fat": 1   }, "contains": [] },
+      { "name": "Sweet potato",      "section": "Produce", "category": "carb",    "baseQtyG": 1200, "per100g": { "kcal": 86,  "protein": 1.6,  "carbs": 20,   "fat": 0.1 }, "contains": [] },
+      { "name": "Whole-grain bread", "section": "Pantry",  "category": "carb",    "baseQtyG": 400,  "per100g": { "kcal": 250, "protein": 9,    "carbs": 45,   "fat": 3   }, "contains": ["gluten"] },
+      { "name": "Banana",            "section": "Produce", "category": "carb",    "baseQtyG": 700,  "per100g": { "kcal": 89,  "protein": 1.1,  "carbs": 23,   "fat": 0.3 }, "contains": [] },
+      { "name": "Olive oil",         "section": "Pantry",  "category": "fat",     "baseQtyG": 150,  "per100g": { "kcal": 884, "protein": 0,    "carbs": 0,    "fat": 100 }, "contains": [], "unit": "ml" },
+      { "name": "Peanut butter",     "section": "Pantry",  "category": "fat",     "baseQtyG": 250,  "per100g": { "kcal": 588, "protein": 25,   "carbs": 20,   "fat": 50  }, "contains": ["nuts"] },
+      { "name": "Almonds",           "section": "Pantry",  "category": "fat",     "baseQtyG": 150,  "per100g": { "kcal": 579, "protein": 21,   "carbs": 22,   "fat": 49  }, "contains": ["nuts"] },
+      { "name": "Spinach",           "section": "Produce", "category": "veg",     "baseQtyG": 400,  "per100g": { "kcal": 23,  "protein": 2.9,  "carbs": 3.6,  "fat": 0.4 }, "contains": [] },
+      { "name": "Broccoli",          "section": "Produce", "category": "veg",     "baseQtyG": 600,  "per100g": { "kcal": 34,  "protein": 2.8,  "carbs": 7,    "fat": 0.4 }, "contains": [] },
+      { "name": "Bell pepper",       "section": "Produce", "category": "veg",     "baseQtyG": 400,  "per100g": { "kcal": 31,  "protein": 1,    "carbs": 6,    "fat": 0.3 }, "contains": [] },
+      { "name": "Blueberries",       "section": "Produce", "category": "fruit",   "baseQtyG": 400,  "per100g": { "kcal": 57,  "protein": 0.7,  "carbs": 14,   "fat": 0.3 }, "contains": [] },
+      { "name": "Apple",             "section": "Produce", "category": "fruit",   "baseQtyG": 600,  "per100g": { "kcal": 52,  "protein": 0.3,  "carbs": 14,   "fat": 0.2 }, "contains": [] }
+    ],
+
+    "vegan": [
+      { "name": "Firm tofu",         "section": "Protein", "category": "protein", "baseQtyG": 900,  "per100g": { "kcal": 144, "protein": 17,   "carbs": 3,    "fat": 8   }, "contains": [] },
+      { "name": "Tempeh",            "section": "Protein", "category": "protein", "baseQtyG": 400,  "per100g": { "kcal": 192, "protein": 20,   "carbs": 8,    "fat": 11  }, "contains": [] },
+      { "name": "Lentils, dry",      "section": "Pantry",  "category": "protein", "baseQtyG": 500,  "per100g": { "kcal": 352, "protein": 25,   "carbs": 63,   "fat": 1   }, "contains": [] },
+      { "name": "Chickpeas, dry",    "section": "Pantry",  "category": "protein", "baseQtyG": 400,  "per100g": { "kcal": 364, "protein": 19,   "carbs": 61,   "fat": 6   }, "contains": [] },
+      { "name": "Edamame",           "section": "Frozen",  "category": "protein", "baseQtyG": 500,  "per100g": { "kcal": 121, "protein": 12,   "carbs": 9,    "fat": 5   }, "contains": [] },
+      { "name": "Rolled oats",       "section": "Pantry",  "category": "carb",    "baseQtyG": 700,  "per100g": { "kcal": 379, "protein": 13,   "carbs": 67,   "fat": 7   }, "contains": [] },
+      { "name": "White rice",        "section": "Pantry",  "category": "carb",    "baseQtyG": 700,  "per100g": { "kcal": 360, "protein": 7,    "carbs": 79,   "fat": 1   }, "contains": [] },
+      { "name": "Quinoa, dry",       "section": "Pantry",  "category": "carb",    "baseQtyG": 400,  "per100g": { "kcal": 368, "protein": 14,   "carbs": 64,   "fat": 6   }, "contains": [] },
+      { "name": "Sweet potato",      "section": "Produce", "category": "carb",    "baseQtyG": 1200, "per100g": { "kcal": 86,  "protein": 1.6,  "carbs": 20,   "fat": 0.1 }, "contains": [] },
+      { "name": "Banana",            "section": "Produce", "category": "carb",    "baseQtyG": 700,  "per100g": { "kcal": 89,  "protein": 1.1,  "carbs": 23,   "fat": 0.3 }, "contains": [] },
+      { "name": "Olive oil",         "section": "Pantry",  "category": "fat",     "baseQtyG": 150,  "per100g": { "kcal": 884, "protein": 0,    "carbs": 0,    "fat": 100 }, "contains": [], "unit": "ml" },
+      { "name": "Peanut butter",     "section": "Pantry",  "category": "fat",     "baseQtyG": 300,  "per100g": { "kcal": 588, "protein": 25,   "carbs": 20,   "fat": 50  }, "contains": ["nuts"] },
+      { "name": "Almonds",           "section": "Pantry",  "category": "fat",     "baseQtyG": 200,  "per100g": { "kcal": 579, "protein": 21,   "carbs": 22,   "fat": 49  }, "contains": ["nuts"] },
+      { "name": "Chia seeds",        "section": "Pantry",  "category": "fat",     "baseQtyG": 100,  "per100g": { "kcal": 486, "protein": 17,   "carbs": 42,   "fat": 31  }, "contains": [] },
+      { "name": "Spinach",           "section": "Produce", "category": "veg",     "baseQtyG": 400,  "per100g": { "kcal": 23,  "protein": 2.9,  "carbs": 3.6,  "fat": 0.4 }, "contains": [] },
+      { "name": "Broccoli",          "section": "Produce", "category": "veg",     "baseQtyG": 600,  "per100g": { "kcal": 34,  "protein": 2.8,  "carbs": 7,    "fat": 0.4 }, "contains": [] },
+      { "name": "Bell pepper",       "section": "Produce", "category": "veg",     "baseQtyG": 400,  "per100g": { "kcal": 31,  "protein": 1,    "carbs": 6,    "fat": 0.3 }, "contains": [] },
+      { "name": "Blueberries",       "section": "Produce", "category": "fruit",   "baseQtyG": 400,  "per100g": { "kcal": 57,  "protein": 0.7,  "carbs": 14,   "fat": 0.3 }, "contains": [] },
+      { "name": "Apple",             "section": "Produce", "category": "fruit",   "baseQtyG": 600,  "per100g": { "kcal": 52,  "protein": 0.3,  "carbs": 14,   "fat": 0.2 }, "contains": [] }
+    ]
+  }
+}

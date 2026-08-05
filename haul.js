@@ -4,6 +4,7 @@
 
 import "/src/auth/auth-ui.js";
 import { pushRemote, pullRemoteIfSignedIn } from "/src/lib/prefs.js";
+import { generateHaul } from "/src/lib/haul-engine.js";
 
 const STEPS = ["goal", "stats", "training", "diet", "result"];
 
@@ -61,6 +62,8 @@ if (state.diet.planDays == null)      state.diet.planDays = 7;
 if (!state.diet.cookTime)             state.diet.cookTime = "any";
 if (state.diet.avoidOther == null)    state.diet.avoidOther = "";
 if (state.diet.notes == null)         state.diet.notes = "";
+// Grocery-list weight units default to the same system the user picked for stats.
+if (!state.haulUnits) state.haulUnits = state.stats.units === "metric" ? "metric" : "imperial";
 
 // ─────────────────────────────────────────────
 // Unit conversion
@@ -953,6 +956,139 @@ function renderResult() {
   resultTdee.textContent    = formatKcal(t.tdee);
   resultGoalAdj.textContent = goalAdjustmentText(t);
   resultTarget.textContent  = formatKcal(t.target);
+
+  renderHaul(t);
+}
+
+// ─────────────────────────────────────────────
+// Haul list — deterministic grocery list scaled from the targets.
+// (M2 phase 1: no AI. Same output schema the AI path will later produce.)
+// ─────────────────────────────────────────────
+
+const haulListEl   = document.getElementById("haul-list");
+const haulListSub  = document.getElementById("haul-list-sub");
+const haulListFoot = document.getElementById("haul-list-foot");
+const haulUnitOptions = Array.from(document.querySelectorAll("[data-haul-units]"));
+
+function applyHaulUnits() {
+  haulUnitOptions.forEach((btn) => {
+    const on = btn.dataset.haulUnits === state.haulUnits;
+    btn.classList.toggle("selected", on);
+    btn.setAttribute("aria-checked", on ? "true" : "false");
+  });
+}
+
+// Format a haul item's quantity for display, respecting the kg/lb toggle.
+// Weight is stored canonically in grams; counts (eggs) and volume (oil) pass
+// through, converting to fl oz under imperial.
+function formatHaulQty(item) {
+  const imperial = state.haulUnits === "imperial";
+  if (item.unit === "count") return `${item.qty}`;
+  if (item.unit === "ml") {
+    if (imperial) return `${Math.round(item.qty / 29.5735)} fl oz`;
+    return item.qty >= 1000 ? `${(item.qty / 1000).toFixed(1)} L` : `${item.qty} ml`;
+  }
+  if (imperial) {
+    const oz = item.qty / 28.3495;
+    return oz >= 16 ? `${(oz / 16).toFixed(1)} lb` : `${Math.round(oz)} oz`;
+  }
+  return item.qty >= 1000 ? `${(item.qty / 1000).toFixed(1)} kg` : `${item.qty} g`;
+}
+
+haulUnitOptions.forEach((btn) => {
+  btn.addEventListener("click", () => {
+    if (state.haulUnits === btn.dataset.haulUnits) return;
+    state.haulUnits = btn.dataset.haulUnits;
+    saveState(state);
+    if (state.goal) renderHaul(computeTargets());
+  });
+});
+
+const haulPrintBtn = document.getElementById("haul-print-btn");
+if (haulPrintBtn) {
+  haulPrintBtn.addEventListener("click", () => {
+    // Browsers name the saved PDF after document.title. Swap in a clean, dated
+    // name for the print, then restore the real title once the dialog closes.
+    const originalTitle = document.title;
+    const d = new Date();
+    const iso =
+      `${d.getFullYear()}-` +
+      `${String(d.getMonth() + 1).padStart(2, "0")}-` +
+      `${String(d.getDate()).padStart(2, "0")}`;
+    document.title = `Coreon Haul — ${iso}`;
+    window.addEventListener(
+      "afterprint",
+      () => { document.title = originalTitle; },
+      { once: true }
+    );
+    window.print();
+  });
+}
+
+const HAUL_CHECK_KEY = "coreon-haul-checked";
+
+function loadChecked() {
+  try { return JSON.parse(localStorage.getItem(HAUL_CHECK_KEY) || "{}"); }
+  catch { return {}; }
+}
+
+function saveChecked(map) {
+  try { localStorage.setItem(HAUL_CHECK_KEY, JSON.stringify(map)); }
+  catch { /* private mode — ignore */ }
+}
+
+function haulSlug(name) {
+  return "haul-" + name.replace(/[^a-z0-9]+/gi, "-").toLowerCase();
+}
+
+function renderHaul(t) {
+  if (!haulListEl) return;
+
+  const haul = generateHaul(t, state.diet);
+  const checked = loadChecked();
+  const p = haul.provides;
+
+  applyHaulUnits();
+
+  haulListSub.textContent =
+    `${haul.planDays}-day haul · about ${formatNumber(p.kcalPerDay)} kcal a day · ` +
+    `${p.protein}g protein · ${p.carbs}g carbs · ${p.fat}g fat`;
+
+  haulListEl.innerHTML = haul.sections
+    .map(
+      (sec) =>
+        `<div class="haul-list-section">` +
+        `<p class="haul-list-section-label">${sec.section}</p>` +
+        sec.items
+          .map((it) => {
+            const id = haulSlug(it.name);
+            const on = checked[it.name] ? " checked" : "";
+            return (
+              `<label class="haul-row${on}" for="${id}">` +
+              `<input type="checkbox" id="${id}" data-food="${it.name}"${on} />` +
+              `<span class="haul-row-name">${it.name}</span>` +
+              `<span class="haul-row-qty">${formatHaulQty(it)}</span>` +
+              `</label>`
+            );
+          })
+          .join("") +
+        `</div>`
+    )
+    .join("");
+
+  haulListEl.querySelectorAll('input[type="checkbox"]').forEach((cb) => {
+    cb.addEventListener("change", () => {
+      const map = loadChecked();
+      if (cb.checked) map[cb.dataset.food] = true;
+      else delete map[cb.dataset.food];
+      saveChecked(map);
+      cb.closest(".haul-row").classList.toggle("checked", cb.checked);
+    });
+  });
+
+  haulListFoot.textContent = haul.warnings.length
+    ? haul.warnings.join(" ")
+    : "Amounts are rounded for easy shopping. Check items off as you go — your list stays saved on this device.";
 }
 
 // ─────────────────────────────────────────────

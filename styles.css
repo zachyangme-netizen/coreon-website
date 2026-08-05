@@ -1997,6 +1997,194 @@ p {
 }
 
 /* Why card (light gray, sits below the hero) */
+/* ─────────────────────────────────────────────
+   Haul — weekly grocery list (deterministic M2 phase 1)
+   ───────────────────────────────────────────── */
+.haul-list-card {
+  margin-top: 16px;
+  padding: 28px;
+  border: 1px solid var(--line);
+  border-radius: var(--radius-md);
+}
+
+.haul-list-head {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 12px;
+  flex-wrap: wrap;
+  margin-bottom: 6px;
+}
+
+.haul-list-head h2 {
+  font-size: 1.35rem;
+  font-weight: 700;
+}
+
+.haul-units-seg {
+  flex: none;
+  width: max-content;
+}
+
+.haul-units-seg .haul-segment-option {
+  min-height: 34px;
+  padding: 6px 18px;
+  font-size: 0.85rem;
+}
+
+.haul-list-sub {
+  margin-bottom: 20px;
+  font-size: 0.9rem;
+  color: var(--muted);
+}
+
+.haul-list-section {
+  margin-bottom: 22px;
+}
+
+.haul-list-section:last-child {
+  margin-bottom: 0;
+}
+
+.haul-list-section-label {
+  margin-bottom: 8px;
+  font-size: 0.72rem;
+  font-weight: 700;
+  letter-spacing: 0.08em;
+  text-transform: uppercase;
+  color: var(--faint);
+}
+
+.haul-row {
+  display: flex;
+  align-items: center;
+  gap: 12px;
+  padding: 12px 14px;
+  margin-bottom: 8px;
+  border: 1px solid var(--line);
+  border-radius: var(--radius-sm);
+  cursor: pointer;
+  transition: background 140ms ease, opacity 140ms ease;
+}
+
+.haul-row:hover {
+  background: var(--soft);
+}
+
+.haul-row input {
+  flex: none;
+  width: 18px;
+  height: 18px;
+  accent-color: var(--black);
+  cursor: pointer;
+}
+
+.haul-row-name {
+  flex: 1;
+  font-weight: 500;
+}
+
+.haul-row-qty {
+  color: var(--muted);
+  font-weight: 600;
+  font-variant-numeric: tabular-nums;
+}
+
+.haul-row.checked {
+  opacity: 0.5;
+}
+
+.haul-row.checked .haul-row-name {
+  text-decoration: line-through;
+}
+
+.haul-list-foot {
+  margin-top: 16px;
+  font-size: 0.85rem;
+  color: var(--faint);
+  line-height: 1.5;
+}
+
+.haul-print-brand {
+  display: none;
+}
+
+/* Print / Save as PDF — strip the app down to just the grocery list. */
+@media print {
+  @page {
+    margin: 1.5cm;
+  }
+
+  .top-nav,
+  .haul-step-indicator,
+  .haul-intro,
+  .haul-result-card,
+  .haul-breakdown,
+  .haul-why-card,
+  .haul-result-note,
+  .haul-result-actions,
+  .haul-units-seg,
+  .haul-list-foot {
+    display: none !important;
+  }
+
+  body {
+    background: #fff;
+    color: #000;
+  }
+
+  .haul-container {
+    max-width: none;
+    padding: 0;
+  }
+
+  .haul-list-card {
+    margin: 0;
+    padding: 0;
+    border: none;
+  }
+
+  .haul-print-brand {
+    display: block;
+    margin-bottom: 4px;
+    font-size: 0.75rem;
+    font-weight: 700;
+    letter-spacing: 0.12em;
+    text-transform: uppercase;
+    color: #000;
+  }
+
+  .haul-list-head {
+    margin-bottom: 4px;
+  }
+
+  .haul-list-sub {
+    margin-bottom: 18px;
+    color: #000;
+  }
+
+  .haul-list-section {
+    break-inside: avoid;
+    margin-bottom: 16px;
+  }
+
+  .haul-row {
+    padding: 7px 2px;
+    border: none;
+    border-bottom: 1px solid #ddd;
+    border-radius: 0;
+  }
+
+  .haul-row:hover {
+    background: none;
+  }
+
+  .haul-row.checked {
+    opacity: 1;
+    color: #999;
+  }
+}
+
 .haul-why-card {
   margin-top: 16px;
   padding: 24px;
