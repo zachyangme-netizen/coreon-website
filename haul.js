@@ -4,7 +4,7 @@
 
 import "/src/auth/auth-ui.js";
 import { pushRemote, pullRemoteIfSignedIn } from "/src/lib/prefs.js";
-import { generateHaul } from "/src/lib/haul-engine.js";
+import { generateHaul, solveFlex } from "/src/lib/haul-engine.js";
 
 const STEPS = ["goal", "stats", "training", "diet", "result"];
 
@@ -68,6 +68,7 @@ if (!state.haulUnits) state.haulUnits = state.stats.units === "metric" ? "metric
 if (!state.haulEdits || typeof state.haulEdits !== "object") state.haulEdits = {};
 if (!state.haulEdits.locked || typeof state.haulEdits.locked !== "object") state.haulEdits.locked = {};
 if (!Array.isArray(state.haulEdits.removedThisWeek)) state.haulEdits.removedThisWeek = [];
+if (!state.haulEdits.flexed || typeof state.haulEdits.flexed !== "object") state.haulEdits.flexed = {};
 
 // ─────────────────────────────────────────────
 // Unit conversion
@@ -974,6 +975,13 @@ const haulListSub  = document.getElementById("haul-list-sub");
 const haulListFoot = document.getElementById("haul-list-foot");
 const haulMeterEl  = document.getElementById("haul-meter");
 const haulResetBtn = document.getElementById("haul-reset");
+const haulRebalanceBtn = document.getElementById("haul-rebalance");
+const haulGapEl = document.getElementById("haul-gap");
+
+// Result of the last "Rebalance" press: { gaps, suggestions } — or null once the
+// user makes a fresh manual edit. Distinguishes "not rebalanced yet" (show the
+// button) from "rebalanced but a gap remains" (show the gap prompt).
+let rebalanceResult = null;
 const haulUnitOptions = Array.from(document.querySelectorAll("[data-haul-units]"));
 
 // Last rendered haul, so edit handlers can look up an item's current grams.
@@ -1038,9 +1046,24 @@ if (haulPrintBtn) {
 
 if (haulResetBtn) {
   haulResetBtn.addEventListener("click", () => {
-    state.haulEdits = { locked: {}, removedThisWeek: [] };
+    state.haulEdits = { locked: {}, removedThisWeek: [], flexed: {} };
+    rebalanceResult = null;
     saveState(state);
     if (state.goal) renderHaul(computeTargets());
+  });
+}
+
+// "Rebalance to my target": re-solve the free items to hit the target, store the
+// new amounts, and stash any gap/suggestions for the prompt.
+if (haulRebalanceBtn) {
+  haulRebalanceBtn.addEventListener("click", () => {
+    if (!state.goal) return;
+    const t = computeTargets();
+    const res = solveFlex(t, state.diet, undefined, state.haulEdits);
+    state.haulEdits.flexed = res.flexed;
+    rebalanceResult = { gaps: res.gaps, suggestions: res.suggestions };
+    saveState(state);
+    renderHaul(t);
   });
 }
 
@@ -1114,8 +1137,9 @@ function renderHaul(t) {
   // Reset per-list edits when the inputs behind the base list change.
   const key = haulEditKey(t);
   if (state.haulEditsKey !== key) {
-    state.haulEdits = { locked: {}, removedThisWeek: [] };
+    state.haulEdits = { locked: {}, removedThisWeek: [], flexed: {} };
     state.haulEditsKey = key;
+    rebalanceResult = null;
     saveState(state);
   }
 
@@ -1179,12 +1203,13 @@ function renderHaul(t) {
       if (!item) return;
       const step = haulStep(item);
       state.haulEdits.locked[name] = Math.max(step, item.grams + dir * step);
+      rebalanceResult = null; // a manual edit invalidates the last rebalance context
       saveState(state);
       renderHaul(computeTargets());
     });
   });
 
-  // Remove (this week only in phase 1).
+  // Remove (this list only in phase 1).
   haulListEl.querySelectorAll(".haul-remove").forEach((btn) => {
     btn.addEventListener("click", () => {
       const name = btn.dataset.food;
@@ -1192,19 +1217,69 @@ function renderHaul(t) {
         state.haulEdits.removedThisWeek.push(name);
       }
       delete state.haulEdits.locked[name];
+      delete state.haulEdits.flexed[name];
+      rebalanceResult = null;
       saveState(state);
       renderHaul(computeTargets());
     });
   });
 
+  // Rebalance button vs. gap prompt vs. nothing.
+  const offTarget = ["protein", "carbs", "fat", "kcalPerDay"].some((k) => {
+    const tgt = haul.targets[k];
+    const ratio = tgt > 0 ? haul.provides[k] / tgt : 1;
+    return ratio < 0.92 || ratio > 1.08;
+  });
+  const gapAfterRebalance = rebalanceResult && rebalanceResult.gaps.length > 0;
+
+  // Show "Rebalance" when the list is off-target and hasn't just been rebalanced.
+  if (haulRebalanceBtn) haulRebalanceBtn.hidden = !offTarget || !!rebalanceResult;
+  renderGapPrompt(gapAfterRebalance ? rebalanceResult : null);
+
   const edited =
     Object.keys(state.haulEdits.locked).length > 0 ||
-    state.haulEdits.removedThisWeek.length > 0;
+    state.haulEdits.removedThisWeek.length > 0 ||
+    Object.keys(state.haulEdits.flexed).length > 0;
   if (haulResetBtn) haulResetBtn.hidden = !edited;
 
   haulListFoot.textContent = haul.warnings.length
     ? haul.warnings.join(" ")
-    : "Adjust amounts or remove items — the meter shows how your list tracks your targets. Saved on this device.";
+    : "Adjust amounts or remove items, then Rebalance to fit your target. Saved on this device.";
+}
+
+// The gap prompt: shown after a rebalance that couldn't fully close the target,
+// offering one-tap re-adds of foods the user removed.
+function renderGapPrompt(result) {
+  if (!haulGapEl) return;
+  if (!result || !result.gaps.length) {
+    haulGapEl.hidden = true;
+    haulGapEl.innerHTML = "";
+    return;
+  }
+  const MACRO_LABEL = { protein: "protein", carb: "carbs", fat: "fat" };
+  const shortfalls = result.gaps
+    .map((g) => `${g.shortPerDay} g ${MACRO_LABEL[g.macro]}`)
+    .join(" and ");
+  const chips = result.suggestions
+    .map(
+      (s) =>
+        `<button type="button" class="haul-gap-chip" data-readd="${s.name}">+ ${s.name}</button>`
+    )
+    .join("");
+  haulGapEl.innerHTML =
+    `<p class="haul-gap-text">Still ${shortfalls} short — the amounts on hand can't cover it.` +
+    (chips ? ` Re-add something you like:</p><div class="haul-gap-chips">${chips}</div>` : `</p>`);
+  haulGapEl.hidden = false;
+
+  haulGapEl.querySelectorAll(".haul-gap-chip").forEach((btn) => {
+    btn.addEventListener("click", () => {
+      const name = btn.dataset.readd;
+      state.haulEdits.removedThisWeek = state.haulEdits.removedThisWeek.filter((n) => n !== name);
+      rebalanceResult = null; // re-added; let the user rebalance again
+      saveState(state);
+      renderHaul(computeTargets());
+    });
+  });
 }
 
 // ─────────────────────────────────────────────
