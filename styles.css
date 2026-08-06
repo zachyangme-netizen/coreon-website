@@ -2239,6 +2239,11 @@ p {
   opacity: 0.85;
 }
 
+/* `display: block` above would otherwise override the hidden attribute. */
+.haul-rebalance[hidden] {
+  display: none;
+}
+
 .haul-gap {
   margin-bottom: 22px;
   padding: 14px 16px;
