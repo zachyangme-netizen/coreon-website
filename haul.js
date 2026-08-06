@@ -978,6 +978,7 @@ const haulResetBtn = document.getElementById("haul-reset");
 const haulRebalanceBtn = document.getElementById("haul-rebalance");
 const haulGapEl = document.getElementById("haul-gap");
 const haulDeficitHint = document.getElementById("haul-deficit-hint");
+const haulFiltersEl = document.getElementById("haul-filters");
 
 // Result of the last "Rebalance" press: { gaps, suggestions } — or null once the
 // user makes a fresh manual edit. Distinguishes "not rebalanced yet" (show the
@@ -987,6 +988,9 @@ const haulUnitOptions = Array.from(document.querySelectorAll("[data-haul-units]"
 
 // Last rendered haul, so edit handlers can look up an item's current grams.
 let currentHaul = null;
+
+// Active macro focus filter ("all" or a category) — a transient view, not saved.
+let haulFilter = "all";
 
 function applyHaulUnits() {
   haulUnitOptions.forEach((btn) => {
@@ -1105,6 +1109,32 @@ function haulStep(item) {
 // The live "are you still hitting the goal?" meter.
 // Macro-role tag label per food category.
 const MACRO_TAG = { protein: "Protein", carb: "Carbs", fat: "Fat", veg: "Veg", fruit: "Fruit" };
+const FILTER_ORDER = ["protein", "carb", "fat", "veg", "fruit"];
+
+// Macro focus filter: chips that scope the list to one macro. The meter and
+// totals always reflect the whole haul — this only changes what's shown.
+function renderFilters(haul) {
+  if (!haulFiltersEl) return;
+  const present = FILTER_ORDER.filter((cat) =>
+    haul.sections.some((s) => s.items.some((i) => i.category === cat))
+  );
+  if (haulFilter !== "all" && !present.includes(haulFilter)) haulFilter = "all";
+
+  const chip = (cat, label) =>
+    `<button type="button" class="haul-filter-chip haul-filter-${cat}${
+      haulFilter === cat ? " active" : ""
+    }" data-filter="${cat}" aria-pressed="${haulFilter === cat}">${label}</button>`;
+
+  haulFiltersEl.innerHTML =
+    chip("all", "All") + present.map((cat) => chip(cat, MACRO_TAG[cat])).join("");
+
+  haulFiltersEl.querySelectorAll(".haul-filter-chip").forEach((btn) => {
+    btn.addEventListener("click", () => {
+      haulFilter = btn.dataset.filter;
+      renderHaul(computeTargets());
+    });
+  });
+}
 
 function renderMeter(haul) {
   if (!haulMeterEl) return;
@@ -1144,6 +1174,7 @@ function renderHaul(t) {
     state.haulEdits = { locked: {}, removedThisWeek: [], flexed: {} };
     state.haulEditsKey = key;
     rebalanceResult = null;
+    haulFilter = "all";
     saveState(state);
   }
 
@@ -1176,12 +1207,17 @@ function renderHaul(t) {
     }
   }
 
+  renderFilters(haul);
+
   haulListEl.innerHTML = haul.sections
-    .map(
-      (sec) =>
+    .map((sec) => {
+      const items =
+        haulFilter === "all" ? sec.items : sec.items.filter((i) => i.category === haulFilter);
+      if (!items.length) return "";
+      return (
         `<div class="haul-list-section">` +
         `<p class="haul-list-section-label">${sec.section}</p>` +
-        sec.items
+        items
           .map((it) => {
             const id = haulSlug(it.name);
             const on = checked[it.name] ? " checked" : "";
@@ -1207,7 +1243,8 @@ function renderHaul(t) {
           })
           .join("") +
         `</div>`
-    )
+      );
+    })
     .join("");
 
   // Check-off (persists per device).
