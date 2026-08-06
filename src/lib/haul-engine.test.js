@@ -1,5 +1,5 @@
 import { describe, it, expect } from "vitest";
-import { generateHaul } from "./haul-engine.js";
+import { generateHaul, solveFlex } from "./haul-engine.js";
 
 // A realistic set of targets from computeTargets() (fuel-performance runner).
 const TARGETS = {
@@ -106,5 +106,53 @@ describe("generateHaul", () => {
     const edited = generateHaul(TARGETS, diet, undefined, { locked: { "White rice": bumped } });
     expect(gramsOf(edited, "White rice")).toBe(bumped);
     expect(edited.provides.carbs).toBeGreaterThan(base.provides.carbs);
+  });
+});
+
+// --- M3 phase 2: solveFlex (the "Rebalance to my target" action) ---
+
+describe("solveFlex", () => {
+  const DIET = { style: "omnivore", avoid: [], planDays: 7 };
+
+  it("flexes the free items to hold the target after a coverable removal", () => {
+    // Remove a smaller protein source the others can absorb within the cap.
+    const edits = { removedThisWeek: ["Lean beef mince"], locked: {}, flexed: {} };
+    const literal = generateHaul(TARGETS, DIET, undefined, edits); // pre-rebalance dip
+    const { flexed } = solveFlex(TARGETS, DIET, undefined, edits);
+    const rebalanced = generateHaul(TARGETS, DIET, undefined, { ...edits, flexed });
+    // Rebalancing recovers protein toward target and lands within ~10%.
+    expect(rebalanced.provides.protein).toBeGreaterThan(literal.provides.protein);
+    const drift = Math.abs(rebalanced.provides.protein - TARGETS.protein) / TARGETS.protein;
+    expect(drift).toBeLessThan(0.1);
+    const names2 = rebalanced.sections.flatMap((s) => s.items).map((i) => i.name);
+    expect(names2).not.toContain("Lean beef mince");
+  });
+
+  it("never flexes a locked item", () => {
+    const edits = { removedThisWeek: [], locked: { "White rice": 400 }, flexed: {} };
+    const { flexed } = solveFlex(TARGETS, DIET, undefined, edits);
+    expect(flexed["White rice"]).toBeUndefined();
+  });
+
+  it("caps flex and reports a gap it cannot close, with ranked re-add suggestions", () => {
+    const proteinFoods = ["Chicken breast", "Lean beef mince", "Eggs", "Greek yogurt, 2%"];
+    const edits = { removedThisWeek: proteinFoods, locked: {}, flexed: {} };
+    const { gaps, suggestions } = solveFlex(TARGETS, DIET, undefined, edits);
+    const proteinGap = gaps.find((g) => g.macro === "protein");
+    expect(proteinGap).toBeTruthy();
+    expect(proteinGap.shortPerDay).toBeGreaterThan(0);
+    expect(suggestions.length).toBeGreaterThan(0);
+    expect(suggestions[0].macro).toBe("protein");
+    // Chicken has the highest protein density, so it ranks first.
+    expect(suggestions[0].name).toBe("Chicken breast");
+  });
+
+  it("reports no gap when the remaining foods can cover the target", () => {
+    const { gaps } = solveFlex(TARGETS, DIET, undefined, {
+      removedThisWeek: ["Banana"],
+      locked: {},
+      flexed: {},
+    });
+    expect(gaps.find((g) => g.macro === "carb")).toBeFalsy();
   });
 });

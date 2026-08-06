@@ -2218,6 +2218,67 @@ p {
   color: var(--black);
 }
 
+/* Rebalance CTA + gap prompt (M3 phase 2) */
+.haul-rebalance {
+  display: block;
+  width: 100%;
+  margin: 0 0 22px;
+  padding: 12px 16px;
+  border: none;
+  border-radius: var(--radius-sm);
+  background: var(--black);
+  color: var(--white);
+  font-family: inherit;
+  font-size: 0.95rem;
+  font-weight: 600;
+  cursor: pointer;
+  transition: opacity 160ms ease;
+}
+
+.haul-rebalance:hover {
+  opacity: 0.85;
+}
+
+.haul-gap {
+  margin-bottom: 22px;
+  padding: 14px 16px;
+  border: 1px solid var(--line);
+  border-radius: var(--radius-sm);
+  background: var(--soft);
+}
+
+.haul-gap-text {
+  font-size: 0.9rem;
+  color: var(--muted);
+  line-height: 1.55;
+}
+
+.haul-gap-chips {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 8px;
+  margin-top: 12px;
+}
+
+.haul-gap-chip {
+  padding: 7px 14px;
+  border: 1px solid var(--line);
+  border-radius: 999px;
+  background: var(--white);
+  color: var(--black);
+  font-family: inherit;
+  font-size: 0.85rem;
+  font-weight: 600;
+  cursor: pointer;
+  transition: background 140ms ease, border-color 140ms ease, color 140ms ease;
+}
+
+.haul-gap-chip:hover {
+  background: var(--black);
+  color: var(--white);
+  border-color: var(--black);
+}
+
 .haul-list-foot {
   margin-top: 16px;
   font-size: 0.85rem;
@@ -2247,6 +2308,8 @@ p {
   .haul-list-foot,
   .haul-meter,
   .haul-reset,
+  .haul-rebalance,
+  .haul-gap,
   .haul-qty-btn,
   .haul-remove {
     display: none !important;
