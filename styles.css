@@ -2146,6 +2146,42 @@ p {
   text-decoration: line-through;
 }
 
+.haul-row-namewrap {
+  flex: 1;
+  min-width: 0;
+  display: flex;
+  flex-direction: column;
+  gap: 3px;
+}
+
+/* Macro-role tags */
+.haul-tag {
+  align-self: flex-start;
+  font-size: 11px;
+  font-weight: 500;
+  line-height: 1.5;
+  padding: 1px 8px;
+  border-radius: 999px;
+}
+
+.haul-tag-protein { background: #eeedfe; color: #3c3489; }
+.haul-tag-carb    { background: #faeeda; color: #854f0b; }
+.haul-tag-fat     { background: #e6f1fb; color: #0c447c; }
+.haul-tag-veg     { background: #eaf3de; color: #27500a; }
+.haul-tag-fruit   { background: #fbeaf0; color: #72243e; }
+
+/* Deficit highlight — inset ring in the macro colour (no layout shift) */
+.haul-row.deficit-protein { box-shadow: inset 0 0 0 1.5px #7f77dd; }
+.haul-row.deficit-carb    { box-shadow: inset 0 0 0 1.5px #ba7517; }
+.haul-row.deficit-fat     { box-shadow: inset 0 0 0 1.5px #378add; }
+
+.haul-deficit-hint {
+  margin: 2px 0 18px;
+  font-size: 12px;
+  font-weight: 500;
+  color: var(--muted);
+}
+
 /* Live target meter — provides vs. target as you edit */
 .haul-meter {
   display: grid;
@@ -2312,9 +2348,11 @@ p {
   .haul-units-seg,
   .haul-list-foot,
   .haul-meter,
+  .haul-deficit-hint,
   .haul-reset,
   .haul-rebalance,
   .haul-gap,
+  .haul-tag,
   .haul-qty-btn,
   .haul-remove {
     display: none !important;
