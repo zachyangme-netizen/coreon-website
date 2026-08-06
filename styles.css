@@ -2182,6 +2182,43 @@ p {
   color: var(--muted);
 }
 
+/* Macro focus filter chips (reuse the tag colours) */
+.haul-filters {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 8px;
+  margin-bottom: 16px;
+}
+
+.haul-filter-chip {
+  font-family: inherit;
+  font-size: 12px;
+  font-weight: 500;
+  padding: 5px 12px;
+  border-radius: 999px;
+  border: 1px solid transparent;
+  cursor: pointer;
+  background: var(--soft);
+  color: var(--muted);
+  transition: background 140ms ease, color 140ms ease, border-color 140ms ease;
+}
+
+.haul-filter-protein { background: #eeedfe; color: #3c3489; }
+.haul-filter-carb    { background: #faeeda; color: #854f0b; }
+.haul-filter-fat     { background: #e6f1fb; color: #0c447c; }
+.haul-filter-veg     { background: #eaf3de; color: #27500a; }
+.haul-filter-fruit   { background: #fbeaf0; color: #72243e; }
+
+.haul-filter-chip.active {
+  border-color: currentColor;
+}
+
+.haul-filter-all.active {
+  background: var(--black);
+  color: var(--white);
+  border-color: var(--black);
+}
+
 /* Live target meter — provides vs. target as you edit */
 .haul-meter {
   display: grid;
@@ -2349,6 +2386,7 @@ p {
   .haul-list-foot,
   .haul-meter,
   .haul-deficit-hint,
+  .haul-filters,
   .haul-reset,
   .haul-rebalance,
   .haul-gap,
