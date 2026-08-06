@@ -977,6 +977,7 @@ const haulMeterEl  = document.getElementById("haul-meter");
 const haulResetBtn = document.getElementById("haul-reset");
 const haulRebalanceBtn = document.getElementById("haul-rebalance");
 const haulGapEl = document.getElementById("haul-gap");
+const haulDeficitHint = document.getElementById("haul-deficit-hint");
 
 // Result of the last "Rebalance" press: { gaps, suggestions } — or null once the
 // user makes a fresh manual edit. Distinguishes "not rebalanced yet" (show the
@@ -1102,6 +1103,9 @@ function haulStep(item) {
 }
 
 // The live "are you still hitting the goal?" meter.
+// Macro-role tag label per food category.
+const MACRO_TAG = { protein: "Protein", carb: "Carbs", fat: "Fat", veg: "Veg", fruit: "Fruit" };
+
 function renderMeter(haul) {
   if (!haulMeterEl) return;
   const rows = [
@@ -1154,6 +1158,24 @@ function renderHaul(t) {
 
   renderMeter(haul);
 
+  // Which macro categories are under target → drives the deficit highlight.
+  const underMacros = new Set();
+  [["protein", "protein"], ["carbs", "carb"], ["fat", "fat"]].forEach(([mk, cat]) => {
+    const tgt = haul.targets[mk];
+    if (tgt > 0 && haul.provides[mk] / tgt < 0.92) underMacros.add(cat);
+  });
+  if (haulDeficitHint) {
+    if (underMacros.size) {
+      const labels = [...underMacros].map((c) => MACRO_TAG[c].toLowerCase());
+      const joined =
+        labels.length <= 1 ? labels[0] : labels.slice(0, -1).join(", ") + " and " + labels.at(-1);
+      haulDeficitHint.textContent = `↑ Under on ${joined} — those items are highlighted.`;
+      haulDeficitHint.hidden = false;
+    } else {
+      haulDeficitHint.hidden = true;
+    }
+  }
+
   haulListEl.innerHTML = haul.sections
     .map(
       (sec) =>
@@ -1163,11 +1185,16 @@ function renderHaul(t) {
           .map((it) => {
             const id = haulSlug(it.name);
             const on = checked[it.name] ? " checked" : "";
+            const tag = MACRO_TAG[it.category] || "";
+            const deficit = underMacros.has(it.category) ? ` deficit-${it.category}` : "";
             return (
-              `<div class="haul-row${on}" data-food="${it.name}">` +
+              `<div class="haul-row${on}${deficit}" data-food="${it.name}">` +
               `<label class="haul-row-check" for="${id}">` +
               `<input type="checkbox" id="${id}" data-food="${it.name}"${on} />` +
+              `<span class="haul-row-namewrap">` +
               `<span class="haul-row-name">${it.name}</span>` +
+              (tag ? `<span class="haul-tag haul-tag-${it.category}">${tag}</span>` : ``) +
+              `</span>` +
               `</label>` +
               `<div class="haul-row-controls">` +
               `<button type="button" class="haul-qty-btn" data-food="${it.name}" data-dir="-1" aria-label="Less ${it.name}">−</button>` +
