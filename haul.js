@@ -1254,6 +1254,7 @@ function renderHaul(t) {
             const id = haulSlug(it.name);
             const on = checked[it.name] ? " checked" : "";
             const tag = MACRO_TAG[it.category] || "";
+            const kcal = Math.round((it.grams / 100) * it.per100g.kcal);
             const deficit = underMacros.has(it.category) ? ` deficit-${it.category}` : "";
             return (
               `<div class="haul-row${on}${deficit}" data-food="${it.name}">` +
@@ -1261,7 +1262,10 @@ function renderHaul(t) {
               `<input type="checkbox" id="${id}" data-food="${it.name}"${on} />` +
               `<span class="haul-row-namewrap">` +
               `<span class="haul-row-name">${it.name}</span>` +
+              `<span class="haul-row-sub">` +
               (tag ? `<span class="haul-tag haul-tag-${it.category}">${tag}</span>` : ``) +
+              `<span class="haul-row-kcal">${formatNumber(kcal)} kcal</span>` +
+              `</span>` +
               `</span>` +
               `</label>` +
               `<div class="haul-row-controls">` +

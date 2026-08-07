@@ -2154,6 +2154,18 @@ p {
   gap: 3px;
 }
 
+.haul-row-sub {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+}
+
+.haul-row-kcal {
+  font-size: 11px;
+  color: var(--faint);
+  font-variant-numeric: tabular-nums;
+}
+
 /* Macro-role tags */
 .haul-tag {
   align-self: flex-start;
@@ -2406,6 +2418,7 @@ p {
   .haul-rebalance,
   .haul-gap,
   .haul-tag,
+  .haul-row-kcal,
   .haul-qty-btn,
   .haul-remove {
     display: none !important;
