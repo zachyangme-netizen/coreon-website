@@ -2271,6 +2271,20 @@ p {
 .haul-meter-under .haul-meter-track > span { background: #9aa0a6; }
 .haul-meter-under .haul-meter-val em { color: #7a7f85; }
 
+/* Goal-directional calorie alert (wrong side for the goal) */
+.haul-meter-alert .haul-meter-track > span { background: #b00020; }
+.haul-meter-alert .haul-meter-val em { color: #b00020; font-weight: 600; }
+
+.haul-goal-note {
+  margin: 2px 0 16px;
+  padding: 9px 12px;
+  border-radius: var(--radius-sm);
+  background: #fbeaec;
+  color: #7a0016;
+  font-size: 12.5px;
+  font-weight: 500;
+}
+
 /* Reset edits back to Coreon's picks */
 .haul-reset {
   margin-top: 14px;
@@ -2385,6 +2399,7 @@ p {
   .haul-units-seg,
   .haul-list-foot,
   .haul-meter,
+  .haul-goal-note,
   .haul-deficit-hint,
   .haul-filters,
   .haul-reset,

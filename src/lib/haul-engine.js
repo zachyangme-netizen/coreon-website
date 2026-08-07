@@ -186,6 +186,18 @@ export function solveFlex(targets, diet, data = defaultData, edits = {}) {
   return { flexed, gaps, suggestions: suggestions.slice(0, 3) };
 }
 
+// Goal-aware calorie feedback. The calorie target is a floor when gaining
+// (warn if under), a ceiling when losing (warn if over), and a band otherwise.
+//   → { state: "alert" | "over" | "under" | "ok", delta }  (delta = provides − target)
+export function calorieFeedback(provides, target, goal, tol = 0.05) {
+  const delta = provides - target;
+  const over = provides > target * (1 + tol);
+  const under = provides < target * (1 - tol);
+  if (goal === "gain-muscle") return { state: under ? "alert" : "ok", delta };
+  if (goal === "lose-fat") return { state: over ? "alert" : "ok", delta };
+  return { state: over ? "over" : under ? "under" : "ok", delta };
+}
+
 // ── helpers ──────────────────────────────────────────────────────────────
 
 function weeklyTarget(targets, planDays) {
