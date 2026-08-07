@@ -2088,6 +2088,22 @@ p {
   color: #b00020;
 }
 
+.haul-ai-usage {
+  margin-top: 6px;
+  font-size: 0.75rem;
+  font-weight: 600;
+  letter-spacing: 0.01em;
+  color: var(--muted);
+}
+
+.haul-ai-usage.at-limit {
+  color: #b00020;
+}
+
+.haul-ai-usage[hidden] {
+  display: none;
+}
+
 .haul-ai-actions {
   display: flex;
   align-items: center;

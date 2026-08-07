@@ -4,7 +4,7 @@
 
 import "/src/auth/auth-ui.js";
 import { onAuth, getSession } from "/src/auth/auth.js";
-import { pushRemote, pullRemoteIfSignedIn } from "/src/lib/prefs.js";
+import { pushRemote, pullRemoteIfSignedIn, getAIUsageToday } from "/src/lib/prefs.js";
 import { generateHaul, solveFlex, calorieFeedback } from "/src/lib/haul-engine.js";
 import { computeTargets, GOAL_LABELS } from "/src/lib/targets.js";
 
@@ -1009,12 +1009,21 @@ const haulAIBtn      = document.getElementById("haul-ai-btn");
 const haulAIRevert   = document.getElementById("haul-ai-revert");
 const haulAIBadge    = document.getElementById("haul-ai-badge");
 const haulAISub      = document.getElementById("haul-ai-sub");
+const haulAIUsage    = document.getElementById("haul-ai-usage");
+
+const AI_DAILY_LIMIT = 20; // mirror of the server cap, for display only
+
+// Today's AI-haul count (UTC), or null when unknown/signed-out. Cached so the
+// indicator can render synchronously; refreshed on sign-in and after each gen.
+let aiUsageToday = null;
 
 // Auth state gates the whole control: the endpoint refuses anonymous callers, so
 // there's no point offering "Generate" signed-out. `false` = signed out.
 let haulSignedIn = false;
 onAuth((session) => {
   haulSignedIn = !!session;
+  if (!haulSignedIn) aiUsageToday = null;
+  else refreshAIUsage();
   // If the result is already on screen, re-render so the control reflects the
   // new auth state (Generate enabled when signed in; the whole control hidden
   // when signed out unless an AI basket is already in play). Otherwise render
@@ -1022,6 +1031,27 @@ onAuth((session) => {
   const onResult = document.querySelector('.haul-step[data-step="result"]:not([hidden])');
   if (onResult && isResultReady()) renderHaul(computeTargets(state));
 });
+
+// Fetch today's usage from Supabase and repaint the indicator.
+async function refreshAIUsage() {
+  aiUsageToday = await getAIUsageToday();
+  renderAIUsageLine();
+}
+
+// The "3 / 20 today" line. Shown only when signed in and we know the count.
+function renderAIUsageLine() {
+  if (!haulAIUsage) return;
+  if (!haulSignedIn || aiUsageToday == null) {
+    haulAIUsage.hidden = true;
+    return;
+  }
+  const atLimit = aiUsageToday >= AI_DAILY_LIMIT;
+  haulAIUsage.textContent = atLimit
+    ? `Daily limit reached · ${aiUsageToday}/${AI_DAILY_LIMIT}`
+    : `${aiUsageToday}/${AI_DAILY_LIMIT} AI hauls today`;
+  haulAIUsage.classList.toggle("at-limit", atLimit);
+  haulAIUsage.hidden = false;
+}
 
 const DEFAULT_AI_SUB = "A more varied list — still scaled to your exact targets.";
 
@@ -1041,6 +1071,7 @@ function updateAIControl(useAI) {
       : DEFAULT_AI_SUB;
     haulAISub.classList.remove("haul-ai-error");
   }
+  renderAIUsageLine();
 }
 
 function setAIStatus(msg, isError = false) {
@@ -1080,12 +1111,19 @@ async function generateAIHaul() {
 
     if (!res.ok || !json.ok) {
       const reason = json.reason;
-      if (res.status === 429) setAIStatus(`Daily AI limit reached (${json.limit || 20}). Showing the standard list.`, true);
+      if (res.status === 429) {
+        aiUsageToday = json.limit || AI_DAILY_LIMIT; // they're maxed out for today
+        renderAIUsageLine();
+        setAIStatus(`Daily AI limit reached (${json.limit || AI_DAILY_LIMIT}). Showing the standard list.`, true);
+      }
       else if (res.status === 401) setAIStatus("Sign in above to generate an AI haul.", true);
       else if (reason === "bad_generation") setAIStatus("The AI list didn't check out — kept the standard one.", true);
       else setAIStatus("AI unavailable right now — showing the standard list.", true);
       return;
     }
+
+    // Reflect the fresh count the server returned (authoritative).
+    if (json.usage && typeof json.usage.count === "number") aiUsageToday = json.usage.count;
 
     state.haulAI = {
       data: json.data,

@@ -36,6 +36,30 @@ export function pushRemote(key, state) {
   }, DEBOUNCE_MS);
 }
 
+// How many AI hauls the signed-in user has generated today (UTC), read from the
+// `ai_usage` table the endpoint writes. RLS restricts it to the caller's own
+// row. Returns 0 when signed in with no usage yet, or null when we can't tell
+// (signed out / not configured / error) so the caller can hide the indicator.
+export async function getAIUsageToday() {
+  if (!supabase) return null;
+  const {
+    data: { session },
+  } = await supabase.auth.getSession();
+  if (!session) return null;
+  const today = new Date().toISOString().slice(0, 10); // UTC YYYY-MM-DD
+  const { data, error } = await supabase
+    .from("ai_usage")
+    .select("count")
+    .eq("user_id", session.user.id)
+    .eq("day", today)
+    .maybeSingle();
+  if (error) {
+    console.warn("[coreon] usage load failed:", error.message);
+    return null;
+  }
+  return data?.count ?? 0;
+}
+
 export async function pullRemoteIfSignedIn(key) {
   if (!supabase) return null;
   const {
