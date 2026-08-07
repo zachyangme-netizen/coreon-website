@@ -1,5 +1,5 @@
 import { describe, it, expect } from "vitest";
-import { generateHaul, solveFlex } from "./haul-engine.js";
+import { generateHaul, solveFlex, calorieFeedback } from "./haul-engine.js";
 
 // A realistic set of targets from computeTargets() (fuel-performance runner).
 const TARGETS = {
@@ -154,5 +154,32 @@ describe("solveFlex", () => {
       flexed: {},
     });
     expect(gaps.find((g) => g.macro === "carb")).toBeFalsy();
+  });
+});
+
+// --- goal-aware calorie feedback ---
+
+describe("calorieFeedback", () => {
+  it("gaining: warns only when under the calorie floor", () => {
+    expect(calorieFeedback(2200, 2600, "gain-muscle").state).toBe("alert");
+    expect(calorieFeedback(2600, 2600, "gain-muscle").state).toBe("ok");
+    expect(calorieFeedback(2900, 2600, "gain-muscle").state).toBe("ok"); // surplus is fine
+  });
+
+  it("losing: warns only when over the calorie ceiling", () => {
+    expect(calorieFeedback(2400, 2000, "lose-fat").state).toBe("alert");
+    expect(calorieFeedback(2000, 2000, "lose-fat").state).toBe("ok");
+    expect(calorieFeedback(1700, 2000, "lose-fat").state).toBe("ok"); // deeper deficit is fine here
+  });
+
+  it("fuel: symmetric band (both sides flagged, neither is 'alert')", () => {
+    expect(calorieFeedback(2600, 2600, "fuel-performance").state).toBe("ok");
+    expect(calorieFeedback(3000, 2600, "fuel-performance").state).toBe("over");
+    expect(calorieFeedback(2200, 2600, "fuel-performance").state).toBe("under");
+  });
+
+  it("small drift within tolerance stays ok", () => {
+    expect(calorieFeedback(2550, 2600, "gain-muscle").state).toBe("ok");
+    expect(calorieFeedback(2050, 2000, "lose-fat").state).toBe("ok");
   });
 });

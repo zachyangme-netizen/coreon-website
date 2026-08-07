@@ -4,7 +4,7 @@
 
 import "/src/auth/auth-ui.js";
 import { pushRemote, pullRemoteIfSignedIn } from "/src/lib/prefs.js";
-import { generateHaul, solveFlex } from "/src/lib/haul-engine.js";
+import { generateHaul, solveFlex, calorieFeedback } from "/src/lib/haul-engine.js";
 
 const STEPS = ["goal", "stats", "training", "diet", "result"];
 
@@ -978,6 +978,7 @@ const haulResetBtn = document.getElementById("haul-reset");
 const haulRebalanceBtn = document.getElementById("haul-rebalance");
 const haulGapEl = document.getElementById("haul-gap");
 const haulDeficitHint = document.getElementById("haul-deficit-hint");
+const haulGoalNote = document.getElementById("haul-goal-note");
 const haulFiltersEl = document.getElementById("haul-filters");
 
 // Result of the last "Rebalance" press: { gaps, suggestions } — or null once the
@@ -1136,24 +1137,39 @@ function renderFilters(haul) {
   });
 }
 
-function renderMeter(haul) {
+function renderMeter(haul, goal) {
   if (!haulMeterEl) return;
   const rows = [
-    ["Protein", haul.provides.protein, haul.targets.protein, "g"],
-    ["Carbs", haul.provides.carbs, haul.targets.carbs, "g"],
-    ["Fat", haul.provides.fat, haul.targets.fat, "g"],
-    ["Calories", haul.provides.kcalPerDay, haul.targets.kcalPerDay, ""],
+    ["Protein", haul.provides.protein, haul.targets.protein, "g", false],
+    ["Carbs", haul.provides.carbs, haul.targets.carbs, "g", false],
+    ["Fat", haul.provides.fat, haul.targets.fat, "g", false],
+    ["Calories", haul.provides.kcalPerDay, haul.targets.kcalPerDay, "", true],
   ];
   haulMeterEl.innerHTML = rows
-    .map(([label, prov, tgt, unit]) => {
+    .map(([label, prov, tgt, unit, isCal]) => {
       const ratio = tgt > 0 ? prov / tgt : 1;
-      const status = ratio > 1.08 ? "over" : ratio < 0.92 ? "under" : "ok";
       const pct = Math.max(0, Math.min(ratio, 1)) * 100;
       const delta = prov - tgt;
-      const note =
-        status === "ok"
-          ? "on target"
-          : `${delta > 0 ? "+" : "−"}${Math.abs(delta)}${unit} ${delta > 0 ? "over" : "under"}`;
+      let status, note;
+      if (isCal) {
+        // Calories are goal-directional: floor when gaining, ceiling when losing.
+        status = calorieFeedback(prov, tgt, goal).state;
+        if (status === "alert") {
+          note = goal === "gain-muscle" ? `${Math.abs(delta)} under min` : `${delta} over limit`;
+        } else if (status === "over") {
+          note = `+${delta} over`;
+        } else if (status === "under") {
+          note = `−${Math.abs(delta)} under`;
+        } else {
+          note = "on track";
+        }
+      } else {
+        status = ratio > 1.08 ? "over" : ratio < 0.92 ? "under" : "ok";
+        note =
+          status === "ok"
+            ? "on target"
+            : `${delta > 0 ? "+" : "−"}${Math.abs(delta)}${unit} ${delta > 0 ? "over" : "under"}`;
+      }
       return (
         `<div class="haul-meter-row haul-meter-${status}">` +
         `<span class="haul-meter-label">${label}</span>` +
@@ -1187,7 +1203,23 @@ function renderHaul(t) {
   haulListSub.textContent =
     `${haul.planDays}-day haul · about ${formatNumber(haul.provides.kcalPerDay)} kcal a day`;
 
-  renderMeter(haul);
+  renderMeter(haul, t.goal);
+
+  // Goal-aware calorie nudge — only on the "bad" side (under when gaining,
+  // over when losing).
+  if (haulGoalNote) {
+    const cal = calorieFeedback(haul.provides.kcalPerDay, haul.targets.kcalPerDay, t.goal);
+    if (cal.state === "alert") {
+      const short = Math.abs(cal.delta);
+      haulGoalNote.textContent =
+        t.goal === "gain-muscle"
+          ? `↑ ${short} kcal under your gain minimum — add more (try carbs or fat).`
+          : `↓ ${short} kcal over your limit — trim some (cut carbs or fat).`;
+      haulGoalNote.hidden = false;
+    } else {
+      haulGoalNote.hidden = true;
+    }
+  }
 
   // Which macro categories are under target → drives the deficit highlight.
   const underMacros = new Set();
