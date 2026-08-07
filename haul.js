@@ -3,8 +3,10 @@
 //     the calorie + macro target reveal (no AI). M2 (full haul) coming next.
 
 import "/src/auth/auth-ui.js";
+import { onAuth, getSession } from "/src/auth/auth.js";
 import { pushRemote, pullRemoteIfSignedIn } from "/src/lib/prefs.js";
 import { generateHaul, solveFlex, calorieFeedback } from "/src/lib/haul-engine.js";
+import { computeTargets, GOAL_LABELS } from "/src/lib/targets.js";
 
 const STEPS = ["goal", "stats", "training", "diet", "result"];
 
@@ -14,12 +16,6 @@ const STEP_META = {
   training: { label: "Step 3 of 5 · Training", progress: 60 },
   diet:     { label: "Step 4 of 5 · Diet",     progress: 80 },
   result:   { label: "Your haul",              progress: 100 },
-};
-
-const GOAL_LABELS = {
-  "lose-fat":         "Lose fat",
-  "gain-muscle":      "Gain muscle",
-  "fuel-performance": "Fuel performance",
 };
 
 const STORAGE_KEY = "coreon-haul-state";
@@ -69,6 +65,10 @@ if (!state.haulEdits || typeof state.haulEdits !== "object") state.haulEdits = {
 if (!state.haulEdits.locked || typeof state.haulEdits.locked !== "object") state.haulEdits.locked = {};
 if (!Array.isArray(state.haulEdits.removedThisWeek)) state.haulEdits.removedThisWeek = [];
 if (!state.haulEdits.flexed || typeof state.haulEdits.flexed !== "object") state.haulEdits.flexed = {};
+// AI-generated basket (M2): { data, forKey, id, generatedAt } or absent.
+// `forKey` ties it to the targets/diet it was made for, so a stale basket is
+// never shown after the user changes their inputs.
+if (state.haulAI && typeof state.haulAI !== "object") delete state.haulAI;
 
 // ─────────────────────────────────────────────
 // Unit conversion
@@ -103,87 +103,8 @@ function kmToMi(km) {
   return Math.round(km / 1.609344 * 10) / 10;
 }
 
-// ─────────────────────────────────────────────
-// M1 — Calorie + macro engine (deterministic, no AI)
-// ─────────────────────────────────────────────
-
-const ACTIVITY_FACTOR = 1.036;   // kcal per kg per km of running
-const NEAT_FACTOR     = 0.35;    // non-exercise activity ≈ 35% of BMR
-const FAT_PCT         = 0.25;    // 25% of calories from fat
-const MAX_DEFICIT     = 500;     // safety cap for fat-loss target
-
-const GOAL_INFO = {
-  "lose-fat":         { factor: 0.85, capDeficit: true,  proteinPerKg: 1.8 },
-  "gain-muscle":      { factor: 1.10, capDeficit: false, proteinPerKg: 1.8 },
-  "fuel-performance": { factor: 1.00, capDeficit: false, proteinPerKg: 1.6 },
-};
-
-// For non-runner mode: standard Mifflin activity multipliers (slightly rounded).
-const ACTIVITY_MULTIPLIERS = {
-  light:    1.4,   // 1–3 days/week light-to-moderate exercise
-  moderate: 1.6,   // 4–5 days/week
-  high:     1.8,   // 6+ days/week or hard daily training
-};
-
-function computeBMR({ sex, weightKg, heightCm, age }) {
-  const base = 10 * weightKg + 6.25 * heightCm - 5 * age;
-  return sex === "male" ? base + 5 : base - 161;
-}
-
-function computeTargets() {
-  const goal = state.goal;
-  const { sex, weightKg, heightCm, age } = state.stats;
-  const training = state.training;
-  // Mode is derived: if the user picked an activity level, treat them as a
-  // non-runner (mileage skipped). Otherwise it's the runner path.
-  const mode = training.activityLevel ? "non-runner" : "runner";
-
-  const bmr = computeBMR({ sex, weightKg, heightCm, age });
-
-  let tdee, runningPerDay = 0, neat = 0, activityMultiplier = null;
-
-  if (mode === "non-runner") {
-    activityMultiplier = ACTIVITY_MULTIPLIERS[training.activityLevel] || 1.4;
-    tdee = bmr * activityMultiplier;
-  } else {
-    runningPerDay = (weightKg * ACTIVITY_FACTOR * training.weeklyKm) / 7;
-    neat = bmr * NEAT_FACTOR;
-    tdee = bmr + neat + runningPerDay;
-  }
-
-  const info = GOAL_INFO[goal];
-  let target = tdee * info.factor;
-
-  // Cap deficit to protect performance (fat-loss only)
-  if (info.capDeficit && tdee - target > MAX_DEFICIT) {
-    target = tdee - MAX_DEFICIT;
-  }
-
-  const proteinG    = Math.round(weightKg * info.proteinPerKg);
-  const proteinKcal = proteinG * 4;
-  const fatKcal     = target * FAT_PCT;
-  const fatG        = Math.round(fatKcal / 9);
-  const carbsKcal   = target - proteinKcal - fatKcal;
-  const carbsG      = Math.round(carbsKcal / 4);
-
-  return {
-    goal,
-    goalLabel: GOAL_LABELS[goal] || goal,
-    mode,
-    bmr:        Math.round(bmr),
-    runningPerDay: Math.round(runningPerDay),
-    neat:       Math.round(neat),
-    activityMultiplier,
-    activityLevel: training.activityLevel || null,
-    tdee:       Math.round(tdee),
-    target:     Math.round(target),
-    adjKcal:    Math.round(target - tdee),
-    protein:    proteinG,
-    carbs:      carbsG,
-    fat:        fatG,
-    proteinPerKg: info.proteinPerKg,
-  };
-}
+// Calorie + macro target math lives in src/lib/targets.js (pure + testable +
+// reused by the AI haul generator). computeTargets(state) is imported above.
 
 // ─────────────────────────────────────────────
 // Step routing
@@ -933,7 +854,7 @@ function renderResult() {
   if (!validateStats(state.stats))       { window.location.hash = "#stats";    return; }
   if (!validateTraining(state.training)) { window.location.hash = "#training"; return; }
 
-  const t = computeTargets();
+  const t = computeTargets(state);
 
   resultGoalLabel.textContent = t.goalLabel;
   resultCalories.textContent  = formatNumber(t.target);
@@ -990,6 +911,11 @@ const haulUnitOptions = Array.from(document.querySelectorAll("[data-haul-units]"
 // Last rendered haul, so edit handlers can look up an item's current grams.
 let currentHaul = null;
 
+// The food dataset behind the current list: the AI basket when one is active
+// and matches, else undefined (engine falls back to the deterministic set).
+// Rebalance must solve against the same data the list was built from.
+let activeHaulData = undefined;
+
 // Active macro focus filter ("all" or a category) — a transient view, not saved.
 let haulFilter = "all";
 
@@ -1025,7 +951,7 @@ haulUnitOptions.forEach((btn) => {
     if (state.haulUnits === btn.dataset.haulUnits) return;
     state.haulUnits = btn.dataset.haulUnits;
     saveState(state);
-    if (state.goal) renderHaul(computeTargets());
+    if (state.goal) renderHaul(computeTargets(state));
   });
 });
 
@@ -1055,7 +981,7 @@ if (haulResetBtn) {
     state.haulEdits = { locked: {}, removedThisWeek: [], flexed: {} };
     rebalanceResult = null;
     saveState(state);
-    if (state.goal) renderHaul(computeTargets());
+    if (state.goal) renderHaul(computeTargets(state));
   });
 }
 
@@ -1064,12 +990,126 @@ if (haulResetBtn) {
 if (haulRebalanceBtn) {
   haulRebalanceBtn.addEventListener("click", () => {
     if (!state.goal) return;
-    const t = computeTargets();
-    const res = solveFlex(t, state.diet, undefined, state.haulEdits);
+    const t = computeTargets(state);
+    const res = solveFlex(t, state.diet, activeHaulData, state.haulEdits);
     state.haulEdits.flexed = res.flexed;
     rebalanceResult = { gaps: res.gaps, suggestions: res.suggestions };
     saveState(state);
     renderHaul(t);
+  });
+}
+
+// ─────────────────────────────────────────────
+// AI-generated haul (M2) — the AI proposes a varied basket; the deterministic
+// engine still scales it to the targets. Auth-gated + rate-limited server-side.
+// ─────────────────────────────────────────────
+
+const haulAIEl       = document.getElementById("haul-ai");
+const haulAIBtn      = document.getElementById("haul-ai-btn");
+const haulAIRevert   = document.getElementById("haul-ai-revert");
+const haulAIBadge    = document.getElementById("haul-ai-badge");
+const haulAISub      = document.getElementById("haul-ai-sub");
+
+// Auth state gates the whole control: the endpoint refuses anonymous callers, so
+// there's no point offering "Generate" signed-out. `false` = signed out.
+let haulSignedIn = false;
+onAuth((session) => {
+  haulSignedIn = !!session;
+  // If the result is already on screen, re-render so the control reflects the
+  // new auth state (Generate enabled when signed in; the whole control hidden
+  // when signed out unless an AI basket is already in play). Otherwise render
+  // does nothing here — reaching the result step will render it fresh.
+  const onResult = document.querySelector('.haul-step[data-step="result"]:not([hidden])');
+  if (onResult && isResultReady()) renderHaul(computeTargets(state));
+});
+
+const DEFAULT_AI_SUB = "A more varied list — still scaled to your exact targets.";
+
+// Reflect the current source (standard vs AI) in the control.
+function updateAIControl(useAI) {
+  if (!haulAIEl) return;
+  haulAIEl.hidden = !(haulSignedIn || useAI);
+  if (haulAIBadge) haulAIBadge.hidden = !useAI;
+  if (haulAIRevert) haulAIRevert.hidden = !useAI;
+  if (haulAIBtn) {
+    haulAIBtn.textContent = useAI ? "✨ Regenerate" : "✨ Generate with AI";
+    haulAIBtn.disabled = !haulSignedIn;
+  }
+  if (haulAISub && haulAIBtn && !haulAIBtn.classList.contains("is-loading")) {
+    haulAISub.textContent = useAI
+      ? "AI-picked basket, scaled to your targets. Edit or regenerate anytime."
+      : DEFAULT_AI_SUB;
+    haulAISub.classList.remove("haul-ai-error");
+  }
+}
+
+function setAIStatus(msg, isError = false) {
+  if (!haulAISub) return;
+  haulAISub.textContent = msg;
+  haulAISub.classList.toggle("haul-ai-error", isError);
+}
+
+async function generateAIHaul() {
+  if (!haulAIBtn || !state.goal) return;
+  const session = await getSession();
+  if (!session) {
+    setAIStatus("Sign in above to generate an AI haul.", true);
+    return;
+  }
+
+  const t = computeTargets(state);
+  haulAIBtn.classList.add("is-loading");
+  haulAIBtn.disabled = true;
+  const prevLabel = haulAIBtn.textContent;
+  haulAIBtn.textContent = "Generating…";
+  setAIStatus("Asking the AI for a varied basket…");
+
+  try {
+    const res = await fetch("/api/haul", {
+      method: "POST",
+      headers: {
+        "Content-Type": "application/json",
+        Authorization: `Bearer ${session.access_token}`,
+      },
+      body: JSON.stringify({
+        targets: { target: t.target, protein: t.protein, carbs: t.carbs, fat: t.fat, goal: t.goal, goalLabel: t.goalLabel },
+        diet: { style: state.diet.style || "omnivore", avoid: state.diet.avoid || [], planDays: state.diet.planDays || 7 },
+      }),
+    });
+    const json = await res.json().catch(() => ({}));
+
+    if (!res.ok || !json.ok) {
+      const reason = json.reason;
+      if (res.status === 429) setAIStatus(`Daily AI limit reached (${json.limit || 20}). Showing the standard list.`, true);
+      else if (res.status === 401) setAIStatus("Sign in above to generate an AI haul.", true);
+      else if (reason === "bad_generation") setAIStatus("The AI list didn't check out — kept the standard one.", true);
+      else setAIStatus("AI unavailable right now — showing the standard list.", true);
+      return;
+    }
+
+    state.haulAI = {
+      data: json.data,
+      forKey: haulEditKey(t),
+      id: String((json.usage && json.usage.count) || "") + "-" + new Date().getTime(),
+      generatedAt: new Date().toISOString(),
+    };
+    saveState(state);
+    renderHaul(t); // updateAIControl runs inside → badge on, sub updated
+  } catch {
+    setAIStatus("Couldn't reach the AI service — showing the standard list.", true);
+  } finally {
+    haulAIBtn.classList.remove("is-loading");
+    haulAIBtn.disabled = !haulSignedIn;
+    if (haulAIBtn.textContent === "Generating…") haulAIBtn.textContent = prevLabel;
+  }
+}
+
+if (haulAIBtn) haulAIBtn.addEventListener("click", generateAIHaul);
+if (haulAIRevert) {
+  haulAIRevert.addEventListener("click", () => {
+    delete state.haulAI;
+    saveState(state);
+    if (state.goal) renderHaul(computeTargets(state));
   });
 }
 
@@ -1132,7 +1172,7 @@ function renderFilters(haul) {
   haulFiltersEl.querySelectorAll(".haul-filter-chip").forEach((btn) => {
     btn.addEventListener("click", () => {
       haulFilter = btn.dataset.filter;
-      renderHaul(computeTargets());
+      renderHaul(computeTargets(state));
     });
   });
 }
@@ -1184,17 +1224,27 @@ function renderMeter(haul, goal) {
 function renderHaul(t) {
   if (!haulListEl) return;
 
-  // Reset per-list edits when the inputs behind the base list change.
+  // Use the AI basket only while it matches the current targets/diet; otherwise
+  // it's stale and we fall back to Coreon's deterministic picks.
   const key = haulEditKey(t);
-  if (state.haulEditsKey !== key) {
+  const useAI = !!(state.haulAI && state.haulAI.forKey === key);
+  activeHaulData = useAI ? state.haulAI.data : undefined;
+
+  // Reset per-list edits when the base list changes — either the inputs behind
+  // it (goal/stats/diet) OR the source (standard ↔ a specific AI basket), since
+  // the items themselves differ.
+  const sourceKey = key + "|" + (useAI ? "ai:" + state.haulAI.id : "det");
+  if (state.haulEditsKey !== sourceKey) {
     state.haulEdits = { locked: {}, removedThisWeek: [], flexed: {} };
-    state.haulEditsKey = key;
+    state.haulEditsKey = sourceKey;
     rebalanceResult = null;
     haulFilter = "all";
     saveState(state);
   }
 
-  const haul = generateHaul(t, state.diet, undefined, state.haulEdits);
+  updateAIControl(useAI);
+
+  const haul = generateHaul(t, state.diet, activeHaulData, state.haulEdits);
   currentHaul = haul;
   const checked = loadChecked();
 
@@ -1305,7 +1355,7 @@ function renderHaul(t) {
       state.haulEdits.locked[name] = Math.max(step, item.grams + dir * step);
       rebalanceResult = null; // a manual edit invalidates the last rebalance context
       saveState(state);
-      renderHaul(computeTargets());
+      renderHaul(computeTargets(state));
     });
   });
 
@@ -1320,7 +1370,7 @@ function renderHaul(t) {
       delete state.haulEdits.flexed[name];
       rebalanceResult = null;
       saveState(state);
-      renderHaul(computeTargets());
+      renderHaul(computeTargets(state));
     });
   });
 
@@ -1377,7 +1427,7 @@ function renderGapPrompt(result) {
       state.haulEdits.removedThisWeek = state.haulEdits.removedThisWeek.filter((n) => n !== name);
       rebalanceResult = null; // re-added; let the user rebalance again
       saveState(state);
-      renderHaul(computeTargets());
+      renderHaul(computeTargets(state));
     });
   });
 }
