@@ -6,7 +6,8 @@
     "dev": "vite",
     "build": "vite build",
     "preview": "vite preview",
-    "test": "vitest run"
+    "test": "vitest run",
+    "try:haul-ai": "node scripts/try-haul-ai.mjs"
   },
   "dependencies": {
     "@anthropic-ai/sdk": "^0.91.0",
