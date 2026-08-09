@@ -16,6 +16,7 @@ import fs from "node:fs";
 import Anthropic from "@anthropic-ai/sdk";
 import {
   MODEL,
+  MAX_TOKENS,
   SYSTEM_PROMPT,
   buildUserMessage,
   parseBasket,
@@ -74,7 +75,7 @@ for (let i = 1; i <= runs; i++) {
   const started = Date.now();
   const response = await client.messages.create({
     model,
-    max_tokens: 1600,
+    max_tokens: MAX_TOKENS,
     system: [{ type: "text", text: SYSTEM_PROMPT, cache_control: { type: "ephemeral" } }],
     messages: [{ role: "user", content: buildUserMessage({ targets, diet }) }],
   });
@@ -96,16 +97,17 @@ for (let i = 1; i <= runs; i++) {
   const kept = data ? data.diets[style] : [];
 
   console.log(`── run ${i}/${runs} ${"─".repeat(40)}`);
+  const truncated = response.stop_reason === "max_tokens";
   console.log(
     `tokens: ${u.input_tokens} in` +
       (u.cache_read_input_tokens ? ` (+${u.cache_read_input_tokens} cached)` : "") +
-      ` / ${u.output_tokens} out · ${ms} ms · ${usd(cost)}`
+      ` / ${u.output_tokens} out · stop: ${response.stop_reason}${truncated ? " ⚠ TRUNCATED" : ""} · ${ms} ms · ${usd(cost)}`
   );
 
   if (!data) {
     console.log(`✖ generation REJECTED — endpoint would return 502 (bad_generation).`);
     console.log(`  raw items from model: ${rawCount}`);
-    if (!parsed) console.log(`  (could not parse JSON from the response)`);
+    if (!parsed) console.log(`  (could not parse JSON — ${truncated ? "response was truncated at max_tokens" : "malformed JSON"})`);
     console.log(`  first 400 chars of response:\n  ${text.slice(0, 400).replace(/\n/g, "\n  ")}\n`);
     continue;
   }
