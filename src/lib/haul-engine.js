@@ -276,6 +276,7 @@ function toItem(food, grams) {
     grams,
     unit: food.unit || "g",
     perUnitG: food.perUnitG,
+    unitLabel: food.unitLabel,
     packG: food.packG,
     per100g: food.per100g,
   };

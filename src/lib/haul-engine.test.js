@@ -38,6 +38,13 @@ describe("generateHaul", () => {
     expect(totalG(three)).toBeLessThan(totalG(week));
   });
 
+  it("carries unitLabel onto count items (so the UI can show '2 eggs')", () => {
+    const haul = generateHaul(TARGETS, { style: "omnivore", avoid: [], planDays: 7 });
+    const eggs = haul.sections.flatMap((s) => s.items).find((i) => i.name === "Eggs");
+    expect(eggs.unit).toBe("count");
+    expect(eggs.unitLabel).toBe("egg");
+  });
+
   it("carries packG onto pack-sold items (display rounds to packs; grams stay precise)", () => {
     const haul = generateHaul(TARGETS, { style: "omnivore", avoid: [], planDays: 7 });
     const items = haul.sections.flatMap((s) => s.items);
