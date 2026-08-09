@@ -133,6 +133,20 @@ describe("packG (pack-size) pass-through", () => {
   });
 });
 
+describe("unitLabel (count-item noun) pass-through", () => {
+  it("carries a unitLabel on a count item, singularized + lowercased", () => {
+    const item = { ...chicken, name: "Chicken cutlet", unit: "count", perUnitG: 180, unitLabel: "Breasts" };
+    const data = sanitize([...okBasket(), item], "omnivore");
+    const kept = data.diets.omnivore.find((i) => i.name === "Chicken cutlet");
+    expect(kept.unit).toBe("count");
+    expect(kept.unitLabel).toBe("breast"); // "Breasts" → "breast"
+  });
+  it("leaves unitLabel undefined on a weight item", () => {
+    const data = sanitize(okBasket(), "omnivore");
+    expect(data.diets.omnivore.find((i) => i.name === "White rice").unitLabel).toBeUndefined();
+  });
+});
+
 // The local food library and the AI output share one schema, so hold the seed
 // data to the SAME guard the AI output passes through — this catches a bad seed
 // item (wrong macros, bad section/category, a nonsensical count) at test time.
@@ -151,5 +165,11 @@ describe("local food library (lookups/haul-foods.json)", () => {
       .filter((i) => i.unit === "count" && !countAllowed(i.name))
       .map((i) => i.name);
     expect(offenders).toEqual([]);
+  });
+  it("every count item has a unitLabel noun (no bare-number display)", () => {
+    const missing = allItems
+      .filter((i) => i.unit === "count" && !i.unitLabel)
+      .map((i) => i.name);
+    expect(missing).toEqual([]);
   });
 });

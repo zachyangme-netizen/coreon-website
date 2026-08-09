@@ -29,6 +29,7 @@ Return ONLY a valid JSON object (no markdown, no code fences, no prose):
       "contains": [],
       "unit": "count",     // OPTIONAL — ONLY for whole countable items (see rule)
       "perUnitG": 50,       // OPTIONAL — grams per unit, required if unit is "count"
+      "unitLabel": "egg",   // OPTIONAL — singular noun for a piece, required if unit is "count"
       "packG": 500          // OPTIONAL — typical pack/bag size in grams (see rule)
     }
   ]
@@ -41,7 +42,8 @@ Rules:
 - Include at least 3 protein, 3 carb, 2 fat, 3 veg, 2 fruit foods.
 - "per100g" must be realistic per-100g nutrition. kcal MUST ≈ 4·protein + 4·carbs + 9·fat.
 - "baseQtyG" is a rough weekly seed amount in grams (the solver rescales it).
-- Use "unit":"count" (+ "perUnitG") ONLY for foods bought as discrete whole pieces: eggs, whole fruit (banana, apple), whole vegetables (pepper, sweet potato), bread slices, chicken breasts/fillets. For anything measured by weight or volume — rice, oats, flour, pasta, lentils, quinoa, oil, yogurt, milk, nut butter, nuts, seeds, cheese — OMIT "unit" and "perUnitG" entirely; it'll be shown by weight.
+- Use "unit":"count" (+ "perUnitG" + "unitLabel") ONLY for foods bought as discrete whole pieces: eggs, whole fruit (banana, apple), whole vegetables (pepper, sweet potato), bread slices, chicken breasts/fillets. For anything measured by weight or volume — rice, oats, flour, pasta, lentils, quinoa, oil, yogurt, milk, nut butter, nuts, seeds, cheese — OMIT "unit" and "perUnitG" entirely; it'll be shown by weight.
+- "unitLabel" is REQUIRED whenever "unit" is "count": the singular noun for one piece, so the list can read "2 breasts" not "2". Examples: egg, banana, apple, breast, fillet, slice, pepper. Lowercase, singular, one word where possible.
 - "packG" (OPTIONAL): the typical grocery pack/bag/tub size in grams for foods sold in fixed packs — e.g. chicken/beef mince ~500, salmon ~250, yogurt/cottage cheese ~500, tofu ~400, rice/oats ~1000, olive oil ~500, nuts ~200. The list rounds the amount to whole packs so it matches the shelf. Omit for loose produce sold by piece or open weight.
 - "contains" lists any of ["dairy","gluten","nuts","eggs","soy","shellfish","fish","meat","pork"] the food contains — used to honor the avoid list. Use [] if none apply.
 - Respect the diet style: "vegan" → no animal products at all; "vegetarian" → no meat/fish/shellfish (dairy + eggs OK).
@@ -111,6 +113,10 @@ export function sanitize(items, style) {
     if (raw.unit === "count" && raw.perUnitG > 0 && countAllowed(item.name)) {
       item.unit = "count";
       item.perUnitG = Math.round(raw.perUnitG);
+      // Singular noun so the list reads "2 breasts"; sanitized to one short token.
+      if (typeof raw.unitLabel === "string" && raw.unitLabel.trim()) {
+        item.unitLabel = raw.unitLabel.trim().toLowerCase().replace(/s$/, "").slice(0, 20);
+      }
     } else if (raw.packG > 0 && raw.packG <= 5000) {
       // Weight-sold pack item → round to whole packs at display time.
       item.packG = Math.round(raw.packG);

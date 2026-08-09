@@ -5,7 +5,7 @@
     "omnivore": [
       { "name": "Chicken breast",    "section": "Protein", "category": "protein", "baseQtyG": 1200, "per100g": { "kcal": 165, "protein": 31,   "carbs": 0,    "fat": 3.6 }, "contains": [], "packG": 500 },
       { "name": "Lean beef mince",   "section": "Protein", "category": "protein", "baseQtyG": 500,  "per100g": { "kcal": 250, "protein": 26,   "carbs": 0,    "fat": 15  }, "contains": [], "packG": 500 },
-      { "name": "Eggs",              "section": "Protein", "category": "protein", "baseQtyG": 600,  "per100g": { "kcal": 155, "protein": 13,   "carbs": 1.1,  "fat": 11  }, "contains": ["eggs"], "unit": "count", "perUnitG": 50 },
+      { "name": "Eggs",              "section": "Protein", "category": "protein", "baseQtyG": 600,  "per100g": { "kcal": 155, "protein": 13,   "carbs": 1.1,  "fat": 11  }, "contains": ["eggs"], "unit": "count", "perUnitG": 50, "unitLabel": "egg" },
       { "name": "Greek yogurt, 2%",  "section": "Dairy",   "category": "protein", "baseQtyG": 1000, "per100g": { "kcal": 73,  "protein": 10,   "carbs": 4,    "fat": 2   }, "contains": ["dairy"], "packG": 500 },
       { "name": "Rolled oats",       "section": "Pantry",  "category": "carb",    "baseQtyG": 700,  "per100g": { "kcal": 379, "protein": 13,   "carbs": 67,   "fat": 7   }, "contains": [], "packG": 500 },
       { "name": "White rice",        "section": "Pantry",  "category": "carb",    "baseQtyG": 700,  "per100g": { "kcal": 360, "protein": 7,    "carbs": 79,   "fat": 1   }, "contains": [], "packG": 500 },
@@ -23,7 +23,7 @@
     ],
 
     "vegetarian": [
-      { "name": "Eggs",              "section": "Protein", "category": "protein", "baseQtyG": 800,  "per100g": { "kcal": 155, "protein": 13,   "carbs": 1.1,  "fat": 11  }, "contains": ["eggs"], "unit": "count", "perUnitG": 50 },
+      { "name": "Eggs",              "section": "Protein", "category": "protein", "baseQtyG": 800,  "per100g": { "kcal": 155, "protein": 13,   "carbs": 1.1,  "fat": 11  }, "contains": ["eggs"], "unit": "count", "perUnitG": 50, "unitLabel": "egg" },
       { "name": "Greek yogurt, 2%",  "section": "Dairy",   "category": "protein", "baseQtyG": 1200, "per100g": { "kcal": 73,  "protein": 10,   "carbs": 4,    "fat": 2   }, "contains": ["dairy"], "packG": 500 },
       { "name": "Cottage cheese",    "section": "Dairy",   "category": "protein", "baseQtyG": 600,  "per100g": { "kcal": 98,  "protein": 11,   "carbs": 3,    "fat": 4   }, "contains": ["dairy"], "packG": 500 },
       { "name": "Firm tofu",         "section": "Protein", "category": "protein", "baseQtyG": 600,  "per100g": { "kcal": 144, "protein": 17,   "carbs": 3,    "fat": 8   }, "contains": [], "packG": 400 },

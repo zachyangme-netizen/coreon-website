@@ -939,10 +939,22 @@ function formatWeight(g, imperial) {
   return g >= 1000 ? `${(g / 1000).toFixed(1)} kg` : `${g} g`;
 }
 
+// "1 egg" / "2 eggs" — naive but fine for the singular count nouns we use.
+function pluralize(noun, n) {
+  return n === 1 ? noun : `${noun}s`;
+}
+
 function formatHaulQty(item) {
   const imperial = state.haulUnits === "imperial";
   const g = item.grams;
-  if (item.unit === "count") return `${Math.round(g / (item.perUnitG || 50))}`;
+  if (item.unit === "count") {
+    const n = Math.max(1, Math.round(g / (item.perUnitG || 50)));
+    // Never a bare number: prefer the noun ("2 breasts"), else the per-piece
+    // weight ("2 × 180 g"), so the unit is always clear.
+    if (item.unitLabel) return `${n} ${pluralize(item.unitLabel, n)}`;
+    if (item.perUnitG > 0) return `${n} × ${formatWeight(item.perUnitG, imperial)}`;
+    return `${n}`;
+  }
   if (item.unit === "ml") {
     if (imperial) return `${Math.round(g / 29.5735)} fl oz`;
     return g >= 1000 ? `${(g / 1000).toFixed(1)} L` : `${g} ml`;
