@@ -930,6 +930,15 @@ function applyHaulUnits() {
 // Format a haul item's quantity for display, respecting the kg/lb toggle.
 // Weight is stored canonically in grams; counts (eggs) and volume (oil) pass
 // through, converting to fl oz under imperial.
+function formatWeight(g, imperial) {
+  if (imperial) {
+    const oz = g / 28.3495;
+    // Round first so ~450 g reads "1.0 lb", not "16 oz".
+    return Math.round(oz) >= 16 ? `${(oz / 16).toFixed(1)} lb` : `${Math.round(oz)} oz`;
+  }
+  return g >= 1000 ? `${(g / 1000).toFixed(1)} kg` : `${g} g`;
+}
+
 function formatHaulQty(item) {
   const imperial = state.haulUnits === "imperial";
   const g = item.grams;
@@ -938,12 +947,14 @@ function formatHaulQty(item) {
     if (imperial) return `${Math.round(g / 29.5735)} fl oz`;
     return g >= 1000 ? `${(g / 1000).toFixed(1)} L` : `${g} ml`;
   }
-  if (imperial) {
-    const oz = g / 28.3495;
-    // Round first so ~450 g reads "1.0 lb", not "16 oz".
-    return Math.round(oz) >= 16 ? `${(oz / 16).toFixed(1)} lb` : `${Math.round(oz)} oz`;
+  // Pack-sold items: show it as packs to grab (e.g. "2 × 500 g"), which is what
+  // you actually do at the store. Single pack → just the pack weight.
+  if (item.packG > 0) {
+    const packs = Math.max(1, Math.round(g / item.packG));
+    const packWeight = formatWeight(item.packG, imperial);
+    return packs > 1 ? `${packs} × ${packWeight}` : packWeight;
   }
-  return g >= 1000 ? `${(g / 1000).toFixed(1)} kg` : `${g} g`;
+  return formatWeight(g, imperial);
 }
 
 haulUnitOptions.forEach((btn) => {
@@ -1185,6 +1196,7 @@ function haulEditKey(t) {
 function haulStep(item) {
   if (item.unit === "count") return item.perUnitG || 50;
   if (item.unit === "ml") return 10;
+  if (item.packG > 0) return item.packG; // +/- moves by a whole pack
   return 50;
 }
 

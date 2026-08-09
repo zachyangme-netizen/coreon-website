@@ -38,6 +38,19 @@ describe("generateHaul", () => {
     expect(totalG(three)).toBeLessThan(totalG(week));
   });
 
+  it("carries packG onto pack-sold items (display rounds to packs; grams stay precise)", () => {
+    const haul = generateHaul(TARGETS, { style: "omnivore", avoid: [], planDays: 7 });
+    const items = haul.sections.flatMap((s) => s.items);
+    const chicken = items.find((i) => i.name === "Chicken breast");
+    expect(chicken.packG).toBe(500); // carried through for the "N × 500 g" display
+    // Grams stay on the precise 50 g grid so macros aren't sacrificed to packs.
+    const packItems = items.filter((i) => i.packG > 0);
+    expect(packItems.length).toBeGreaterThan(0);
+    for (const it of packItems) {
+      expect(it.grams % 50, `${it.name} left the 50 g grid`).toBe(0);
+    }
+  });
+
   it("honors the avoid list (nuts, gluten, dairy)", () => {
     const haul = generateHaul(TARGETS, {
       style: "omnivore",

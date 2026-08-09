@@ -120,6 +120,19 @@ describe("count-unit guard", () => {
   });
 });
 
+describe("packG (pack-size) pass-through", () => {
+  it("carries a valid packG through sanitize", () => {
+    const item = { ...chicken, name: "Chicken thigh", packG: 500 };
+    const data = sanitize([...okBasket(), item], "omnivore");
+    expect(data.diets.omnivore.find((i) => i.name === "Chicken thigh").packG).toBe(500);
+  });
+  it("drops an out-of-range packG", () => {
+    const item = { ...chicken, name: "Silly pack", packG: 999999 };
+    const data = sanitize([...okBasket(), item], "omnivore");
+    expect(data.diets.omnivore.find((i) => i.name === "Silly pack").packG).toBeUndefined();
+  });
+});
+
 // The local food library and the AI output share one schema, so hold the seed
 // data to the SAME guard the AI output passes through — this catches a bad seed
 // item (wrong macros, bad section/category, a nonsensical count) at test time.

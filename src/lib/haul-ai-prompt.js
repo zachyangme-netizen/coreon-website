@@ -28,7 +28,8 @@ Return ONLY a valid JSON object (no markdown, no code fences, no prose):
       "per100g": { "kcal": 165, "protein": 31, "carbs": 0, "fat": 3.6 },
       "contains": [],
       "unit": "count",     // OPTIONAL — ONLY for whole countable items (see rule)
-      "perUnitG": 50        // OPTIONAL — grams per unit, required if unit is "count"
+      "perUnitG": 50,       // OPTIONAL — grams per unit, required if unit is "count"
+      "packG": 500          // OPTIONAL — typical pack/bag size in grams (see rule)
     }
   ]
 }
@@ -41,6 +42,7 @@ Rules:
 - "per100g" must be realistic per-100g nutrition. kcal MUST ≈ 4·protein + 4·carbs + 9·fat.
 - "baseQtyG" is a rough weekly seed amount in grams (the solver rescales it).
 - Use "unit":"count" (+ "perUnitG") ONLY for foods bought as discrete whole pieces: eggs, whole fruit (banana, apple), whole vegetables (pepper, sweet potato), bread slices, chicken breasts/fillets. For anything measured by weight or volume — rice, oats, flour, pasta, lentils, quinoa, oil, yogurt, milk, nut butter, nuts, seeds, cheese — OMIT "unit" and "perUnitG" entirely; it'll be shown by weight.
+- "packG" (OPTIONAL): the typical grocery pack/bag/tub size in grams for foods sold in fixed packs — e.g. chicken/beef mince ~500, salmon ~250, yogurt/cottage cheese ~500, tofu ~400, rice/oats ~1000, olive oil ~500, nuts ~200. The list rounds the amount to whole packs so it matches the shelf. Omit for loose produce sold by piece or open weight.
 - "contains" lists any of ["dairy","gluten","nuts","eggs","soy","shellfish","fish","meat","pork"] the food contains — used to honor the avoid list. Use [] if none apply.
 - Respect the diet style: "vegan" → no animal products at all; "vegetarian" → no meat/fish/shellfish (dairy + eggs OK).
 - Never include a food that contains anything on the user's avoid list.
@@ -109,8 +111,11 @@ export function sanitize(items, style) {
     if (raw.unit === "count" && raw.perUnitG > 0 && countAllowed(item.name)) {
       item.unit = "count";
       item.perUnitG = Math.round(raw.perUnitG);
+    } else if (raw.packG > 0 && raw.packG <= 5000) {
+      // Weight-sold pack item → round to whole packs at display time.
+      item.packG = Math.round(raw.packG);
     }
-    // else: leave it as a weight-based item (no unit) — the UI shows grams/lb.
+    // else: plain weight-based item — the UI shows grams/lb.
     clean.push(item);
   }
   // De-dupe by name and require the three macro roles to survive.
