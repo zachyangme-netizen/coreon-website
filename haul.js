@@ -1111,6 +1111,9 @@ async function generateAIHaul() {
 
     if (!res.ok || !json.ok) {
       const reason = json.reason;
+      // Full server detail to the console for diagnosis (never guess again).
+      console.error("[haul] AI generate failed", { httpStatus: res.status, ...json });
+      const ref = json.reqId ? ` (ref ${json.reqId})` : "";
       if (res.status === 429) {
         aiUsageToday = json.limit || AI_DAILY_LIMIT; // they're maxed out for today
         renderAIUsageLine();
@@ -1118,7 +1121,7 @@ async function generateAIHaul() {
       }
       else if (res.status === 401) setAIStatus("Sign in above to generate an AI haul.", true);
       else if (reason === "bad_generation") setAIStatus("The AI list didn't check out — kept the standard one.", true);
-      else setAIStatus("AI unavailable right now — showing the standard list.", true);
+      else setAIStatus(`AI unavailable right now — showing the standard list.${ref}`, true);
       return;
     }
 
