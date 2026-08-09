@@ -27,7 +27,7 @@ Return ONLY a valid JSON object (no markdown, no code fences, no prose):
       "baseQtyG": 1000,
       "per100g": { "kcal": 165, "protein": 31, "carbs": 0, "fat": 3.6 },
       "contains": [],
-      "unit": "count",     // OPTIONAL — only for countable items (eggs, fruit)
+      "unit": "count",     // OPTIONAL — ONLY for whole countable items (see rule)
       "perUnitG": 50        // OPTIONAL — grams per unit, required if unit is "count"
     }
   ]
@@ -40,6 +40,7 @@ Rules:
 - Include at least 3 protein, 3 carb, 2 fat, 3 veg, 2 fruit foods.
 - "per100g" must be realistic per-100g nutrition. kcal MUST ≈ 4·protein + 4·carbs + 9·fat.
 - "baseQtyG" is a rough weekly seed amount in grams (the solver rescales it).
+- Use "unit":"count" (+ "perUnitG") ONLY for foods bought as discrete whole pieces: eggs, whole fruit (banana, apple), whole vegetables (pepper, sweet potato), bread slices, chicken breasts/fillets. For anything measured by weight or volume — rice, oats, flour, pasta, lentils, quinoa, oil, yogurt, milk, nut butter, nuts, seeds, cheese — OMIT "unit" and "perUnitG" entirely; it'll be shown by weight.
 - "contains" lists any of ["dairy","gluten","nuts","eggs","soy","shellfish","fish","meat","pork"] the food contains — used to honor the avoid list. Use [] if none apply.
 - Respect the diet style: "vegan" → no animal products at all; "vegetarian" → no meat/fish/shellfish (dairy + eggs OK).
 - Never include a food that contains anything on the user's avoid list.
@@ -73,6 +74,17 @@ export function itemIsValid(it) {
   return true;
 }
 
+// Foods sold by weight or volume — never sensible as a "count" no matter what
+// the model says ("4 olive oils", "5 brown rices"). The prompt asks it to omit
+// count for these; this is the safety net that strips it if it doesn't.
+const BULK_BY_WEIGHT =
+  /\b(oil|rice|oats?|flour|quinoa|couscous|pasta|noodles?|lentils?|beans?|chickpeas?|hummus|yogh?urt|milk|cream|butter|honey|syrup|jam|sugar|salt|sauce|paste|granola|muesli|cereal|powder|cheese|nuts?|almonds?|walnuts?|cashews?|peanuts?|pistachios?|seeds?)\b/i;
+
+// Whether an item may keep a "count" unit — false for bulk weight/volume staples.
+export function countAllowed(name) {
+  return !BULK_BY_WEIGHT.test(name || "");
+}
+
 // Validate + normalize the model's item list into an engine-ready dataset, or
 // null when too little survives. Returns { diets: { [style]: [items] } }.
 export function sanitize(items, style) {
@@ -94,10 +106,11 @@ export function sanitize(items, style) {
         ? raw.contains.filter((c) => typeof c === "string").slice(0, 8)
         : [],
     };
-    if (raw.unit === "count" && raw.perUnitG > 0) {
+    if (raw.unit === "count" && raw.perUnitG > 0 && countAllowed(item.name)) {
       item.unit = "count";
       item.perUnitG = Math.round(raw.perUnitG);
     }
+    // else: leave it as a weight-based item (no unit) — the UI shows grams/lb.
     clean.push(item);
   }
   // De-dupe by name and require the three macro roles to survive.

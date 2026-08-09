@@ -1,5 +1,6 @@
 import { describe, it, expect } from "vitest";
-import { itemIsValid, sanitize, parseBasket, buildUserMessage } from "./haul-ai-prompt.js";
+import { itemIsValid, sanitize, parseBasket, buildUserMessage, countAllowed } from "./haul-ai-prompt.js";
+import foods from "../../lookups/haul-foods.json";
 
 const chicken = {
   name: "Chicken breast",
@@ -86,5 +87,56 @@ describe("buildUserMessage", () => {
     expect(msg).toContain("2600 kcal");
     expect(msg).toContain("vegan");
     expect(msg).toContain("nuts");
+  });
+});
+
+describe("count-unit guard", () => {
+  it("allows genuinely countable items", () => {
+    ["Eggs", "Banana", "Chicken breast", "Whole wheat bread", "Bell pepper (red)"].forEach((n) =>
+      expect(countAllowed(n), n).toBe(true)
+    );
+  });
+  it("blocks bulk weight/volume staples", () => {
+    ["Olive oil", "Brown rice", "Oats", "Quinoa", "Lentils (dried)", "Greek yogurt (0% fat)",
+     "Almonds", "Cottage cheese (low fat)", "Peanut butter"].forEach((n) =>
+      expect(countAllowed(n), n).toBe(false)
+    );
+  });
+
+  const eggsCount = { name: "Eggs", section: "Protein", category: "protein", baseQtyG: 300, per100g: { kcal: 155, protein: 13, carbs: 1.1, fat: 11 }, contains: ["eggs"], unit: "count", perUnitG: 50 };
+  const oilCount = { name: "Olive oil", section: "Pantry", category: "fat", baseQtyG: 200, per100g: { kcal: 884, protein: 0, carbs: 0, fat: 100 }, contains: [], unit: "count", perUnitG: 15 };
+
+  it("sanitize keeps count on a countable item", () => {
+    const data = sanitize([...okBasket().filter((i) => i.name !== "Eggs"), eggsCount], "omnivore");
+    const kept = data.diets.omnivore.find((i) => i.name === "Eggs");
+    expect(kept.unit).toBe("count");
+    expect(kept.perUnitG).toBe(50);
+  });
+  it("sanitize strips count from a bulk staple (olive oil) → weight", () => {
+    const data = sanitize([...okBasket().filter((i) => i.name !== "Olive oil"), oilCount], "omnivore");
+    const kept = data.diets.omnivore.find((i) => i.name === "Olive oil");
+    expect(kept.unit).toBeUndefined();
+    expect(kept.perUnitG).toBeUndefined();
+  });
+});
+
+// The local food library and the AI output share one schema, so hold the seed
+// data to the SAME guard the AI output passes through — this catches a bad seed
+// item (wrong macros, bad section/category, a nonsensical count) at test time.
+describe("local food library (lookups/haul-foods.json)", () => {
+  const allItems = Object.values(foods.diets).flat();
+
+  it("has items", () => {
+    expect(allItems.length).toBeGreaterThan(20);
+  });
+  it("every item passes the shared itemIsValid guard", () => {
+    const bad = allItems.filter((i) => !itemIsValid(i)).map((i) => i.name);
+    expect(bad).toEqual([]);
+  });
+  it("no bulk staple is marked as a count unit", () => {
+    const offenders = allItems
+      .filter((i) => i.unit === "count" && !countAllowed(i.name))
+      .map((i) => i.name);
+    expect(offenders).toEqual([]);
   });
 });
