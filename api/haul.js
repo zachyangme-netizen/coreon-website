@@ -19,6 +19,7 @@ import Anthropic from "@anthropic-ai/sdk";
 import { createClient } from "@supabase/supabase-js";
 import {
   MODEL,
+  MAX_TOKENS,
   DAILY_LIMIT,
   STYLES,
   SYSTEM_PROMPT,
@@ -80,7 +81,7 @@ export default async function handler(req, res) {
     try {
       response = await client.messages.create({
         model: MODEL,
-        max_tokens: 1600,
+        max_tokens: MAX_TOKENS,
         system: [
           { type: "text", text: SYSTEM_PROMPT, cache_control: { type: "ephemeral" } },
         ],
@@ -97,7 +98,17 @@ export default async function handler(req, res) {
     const text = response.content?.[0]?.text || "";
     const parsed = parseBasket(text);
     const data = parsed ? sanitize(parsed.items, style) : null;
-    if (!data) return fail(res, reqId, 502, "bad_generation");
+    if (!data) {
+      // Say WHY it failed: unparseable (often a max_tokens truncation) vs. too
+      // few valid items after the Atwater/coverage checks.
+      const rawCount = Array.isArray(parsed?.items) ? parsed.items.length : 0;
+      const detail = parsed
+        ? `parsed ${rawCount} items, too few valid after checks`
+        : `unparseable JSON (stop_reason: ${response.stop_reason})`;
+      return fail(res, reqId, 502, "bad_generation", detail, {
+        stopReason: response.stop_reason,
+      });
+    }
 
     console.log(`[haul ${reqId}] 200 ok · ${data.diets[style].length} items · usage ${usage}/${DAILY_LIMIT}`);
     res.setHeader("Cache-Control", "no-store");

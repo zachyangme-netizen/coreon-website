@@ -4,6 +4,10 @@
 // the exact same server-side validation. Keeping it pure also makes it testable.
 
 export const MODEL = "claude-haiku-4-5-20251001"; // cheap + fast; Atwater check guards accuracy
+// A full 16–22 item basket (each with per100g) runs ~1.8–2.2k output tokens.
+// 1600 truncated the JSON mid-object → unparseable → bad_generation. 4000 gives
+// comfortable headroom; still well under the streaming threshold.
+export const MAX_TOKENS = 4000;
 export const DAILY_LIMIT = 20; // AI hauls per user per day
 export const STYLES = ["omnivore", "vegetarian", "vegan"];
 export const SECTIONS = ["Produce", "Protein", "Dairy", "Pantry", "Frozen", "Other"];
