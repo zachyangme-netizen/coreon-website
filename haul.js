@@ -65,6 +65,10 @@ if (!state.haulEdits || typeof state.haulEdits !== "object") state.haulEdits = {
 if (!state.haulEdits.locked || typeof state.haulEdits.locked !== "object") state.haulEdits.locked = {};
 if (!Array.isArray(state.haulEdits.removedThisWeek)) state.haulEdits.removedThisWeek = [];
 if (!state.haulEdits.flexed || typeof state.haulEdits.flexed !== "object") state.haulEdits.flexed = {};
+// Persistent "for good" no-list (M3 phase 3). Unlike haulEdits it does NOT reset
+// when goal/stats/diet change — an excluded food stays out of the pool and is
+// never re-picked or re-suggested until the user un-excludes it.
+if (!Array.isArray(state.haulExclusions)) state.haulExclusions = [];
 // AI-generated basket (M2): { data, forKey, id, generatedAt } or absent.
 // `forKey` ties it to the targets/diet it was made for, so a stale basket is
 // never shown after the user changes their inputs.
@@ -898,6 +902,12 @@ const haulMeterEl  = document.getElementById("haul-meter");
 const haulResetBtn = document.getElementById("haul-reset");
 const haulRebalanceBtn = document.getElementById("haul-rebalance");
 const haulGapEl = document.getElementById("haul-gap");
+const haulExcludedEl = document.getElementById("haul-excluded");
+
+// The edit overlay the engine consumes = per-list edits + the persistent no-list.
+function haulEditsWithExclusions() {
+  return { ...state.haulEdits, excluded: state.haulExclusions };
+}
 const haulDeficitHint = document.getElementById("haul-deficit-hint");
 const haulGoalNote = document.getElementById("haul-goal-note");
 const haulFiltersEl = document.getElementById("haul-filters");
@@ -1014,7 +1024,7 @@ if (haulRebalanceBtn) {
   haulRebalanceBtn.addEventListener("click", () => {
     if (!state.goal) return;
     const t = computeTargets(state);
-    const res = solveFlex(t, state.diet, activeHaulData, state.haulEdits);
+    const res = solveFlex(t, state.diet, activeHaulData, haulEditsWithExclusions());
     state.haulEdits.flexed = res.flexed;
     rebalanceResult = { gaps: res.gaps, suggestions: res.suggestions };
     saveState(state);
@@ -1309,7 +1319,7 @@ function renderHaul(t) {
 
   updateAIControl(useAI);
 
-  const haul = generateHaul(t, state.diet, activeHaulData, state.haulEdits);
+  const haul = generateHaul(t, state.diet, activeHaulData, haulEditsWithExclusions());
   currentHaul = haul;
   const checked = loadChecked();
 
@@ -1387,7 +1397,8 @@ function renderHaul(t) {
               `<button type="button" class="haul-qty-btn" data-food="${it.name}" data-dir="-1" aria-label="Less ${it.name}">−</button>` +
               `<span class="haul-row-qty">${formatHaulQty(it)}</span>` +
               `<button type="button" class="haul-qty-btn" data-food="${it.name}" data-dir="1" aria-label="More ${it.name}">+</button>` +
-              `<button type="button" class="haul-remove" data-food="${it.name}" aria-label="Remove ${it.name}">✕</button>` +
+              `<button type="button" class="haul-remove" data-food="${it.name}" title="Remove for this week" aria-label="Remove ${it.name} for this week">✕</button>` +
+              `<button type="button" class="haul-forgood" data-food="${it.name}" title="Remove for good — never suggest again" aria-label="Remove ${it.name} for good — never suggest again">⊘</button>` +
               `</div>` +
               `</div>`
             );
@@ -1438,6 +1449,23 @@ function renderHaul(t) {
       renderHaul(computeTargets(state));
     });
   });
+
+  // Remove for good — add to the persistent no-list and clear any per-list edits
+  // for it. It leaves the pool entirely (never re-picked or re-suggested).
+  haulListEl.querySelectorAll(".haul-forgood").forEach((btn) => {
+    btn.addEventListener("click", () => {
+      const name = btn.dataset.food;
+      if (!state.haulExclusions.includes(name)) state.haulExclusions.push(name);
+      state.haulEdits.removedThisWeek = state.haulEdits.removedThisWeek.filter((n) => n !== name);
+      delete state.haulEdits.locked[name];
+      delete state.haulEdits.flexed[name];
+      rebalanceResult = null;
+      saveState(state);
+      renderHaul(computeTargets(state));
+    });
+  });
+
+  renderExcluded();
 
   // Rebalance button vs. gap prompt vs. nothing.
   const offTarget = ["protein", "carbs", "fat", "kcalPerDay"].some((k) => {
@@ -1491,6 +1519,37 @@ function renderGapPrompt(result) {
       const name = btn.dataset.readd;
       state.haulEdits.removedThisWeek = state.haulEdits.removedThisWeek.filter((n) => n !== name);
       rebalanceResult = null; // re-added; let the user rebalance again
+      saveState(state);
+      renderHaul(computeTargets(state));
+    });
+  });
+}
+
+// The persistent "for good" no-list — surfaced as removable chips so exclusions
+// stay visible and reversible (an excluded food otherwise vanishes completely).
+function renderExcluded() {
+  if (!haulExcludedEl) return;
+  const names = state.haulExclusions || [];
+  if (!names.length) {
+    haulExcludedEl.hidden = true;
+    haulExcludedEl.innerHTML = "";
+    return;
+  }
+  const chips = names
+    .map(
+      (n) =>
+        `<button type="button" class="haul-excluded-chip" data-unexclude="${n}" title="Add ${n} back">${n} <span aria-hidden="true">✕</span></button>`
+    )
+    .join("");
+  haulExcludedEl.innerHTML =
+    `<span class="haul-excluded-label">Removed for good:</span> ${chips}`;
+  haulExcludedEl.hidden = false;
+
+  haulExcludedEl.querySelectorAll(".haul-excluded-chip").forEach((btn) => {
+    btn.addEventListener("click", () => {
+      const name = btn.dataset.unexclude;
+      state.haulExclusions = state.haulExclusions.filter((n) => n !== name);
+      rebalanceResult = null; // pool changed; let the user rebalance again
       saveState(state);
       renderHaul(computeTargets(state));
     });

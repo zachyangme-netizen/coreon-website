@@ -58,6 +58,15 @@ describe("generateHaul", () => {
     }
   });
 
+  it("drops an excluded food from the pool entirely (for-good no-list)", () => {
+    const diet = { style: "omnivore", avoid: [], planDays: 7 };
+    expect(names(generateHaul(TARGETS, diet))).toContain("Chicken breast");
+    const excluded = generateHaul(TARGETS, diet, undefined, { excluded: ["Chicken breast"] });
+    expect(names(excluded)).not.toContain("Chicken breast");
+    // Other foods still present — only the excluded one is gone.
+    expect(names(excluded)).toContain("White rice");
+  });
+
   it("honors the avoid list (nuts, gluten, dairy)", () => {
     const haul = generateHaul(TARGETS, {
       style: "omnivore",
@@ -165,6 +174,19 @@ describe("solveFlex", () => {
     expect(suggestions[0].macro).toBe("protein");
     // Chicken has the highest protein density, so it ranks first.
     expect(suggestions[0].name).toBe("Chicken breast");
+  });
+
+  it("never suggests an excluded food, even when it was also removed", () => {
+    const edits = {
+      removedThisWeek: ["Chicken breast", "Lean beef mince", "Eggs", "Greek yogurt, 2%"],
+      excluded: ["Chicken breast"],
+      locked: {},
+      flexed: {},
+    };
+    const { suggestions } = solveFlex(TARGETS, DIET, undefined, edits);
+    expect(suggestions.some((s) => s.name === "Chicken breast")).toBe(false);
+    // The other removed proteins are still fair game to re-add.
+    expect(suggestions.some((s) => s.name === "Lean beef mince")).toBe(true);
   });
 
   it("reports no gap when the remaining foods can cover the target", () => {

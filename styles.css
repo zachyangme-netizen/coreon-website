@@ -2320,6 +2320,73 @@ p {
   color: #b00020;
 }
 
+/* "Remove for good" — same footprint as the weekly remove, distinct hover. */
+.haul-forgood {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  width: 28px;
+  height: 28px;
+  margin-left: 4px;
+  border: 1px solid var(--line);
+  border-radius: 8px;
+  background: var(--white);
+  color: var(--muted);
+  font-size: 0.95rem;
+  line-height: 1;
+  cursor: pointer;
+  transition: background 140ms ease, color 140ms ease, border-color 140ms ease;
+}
+
+.haul-forgood:hover {
+  border-color: #b00020;
+  background: #fbeaec;
+  color: #b00020;
+}
+
+/* Persistent "removed for good" no-list — removable chips. */
+.haul-excluded {
+  display: flex;
+  flex-wrap: wrap;
+  align-items: center;
+  gap: 8px;
+  margin-top: 12px;
+}
+
+.haul-excluded[hidden] {
+  display: none;
+}
+
+.haul-excluded-label {
+  font-size: 0.8rem;
+  font-weight: 600;
+  color: var(--muted);
+}
+
+.haul-excluded-chip {
+  display: inline-flex;
+  align-items: center;
+  gap: 6px;
+  padding: 4px 10px;
+  border: 1px solid var(--line);
+  border-radius: 999px;
+  background: var(--soft);
+  color: var(--muted);
+  font: inherit;
+  font-size: 0.8rem;
+  cursor: pointer;
+  transition: color 140ms ease, border-color 140ms ease;
+}
+
+.haul-excluded-chip span {
+  font-size: 0.7rem;
+}
+
+.haul-excluded-chip:hover {
+  border-color: var(--black);
+  color: var(--black);
+}
+
 .haul-row.checked {
   opacity: 0.5;
 }
@@ -2603,7 +2670,9 @@ p {
   .haul-tag,
   .haul-row-kcal,
   .haul-qty-btn,
-  .haul-remove {
+  .haul-remove,
+  .haul-forgood,
+  .haul-excluded {
     display: none !important;
   }
 

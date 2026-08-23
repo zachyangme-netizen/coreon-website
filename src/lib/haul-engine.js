@@ -46,11 +46,16 @@ export function generateHaul(targets, diet, data = defaultData, edits = {}) {
   const avoid = Array.isArray(diet.avoid) ? diet.avoid : [];
   const planDays = diet.planDays || 7;
   const removed = new Set(edits.removedThisWeek || []);
+  const excluded = new Set(edits.excluded || []);
   const locked = edits.locked || {};
   const flexed = edits.flexed || {};
 
+  // `excluded` (the persistent "for good" no-list) is filtered at the source, so
+  // those foods are gone from the pool entirely — they don't even influence the
+  // scaling factors. `removed` (this-week only) is dropped later, after factors,
+  // so removing an item shows honest drift instead of silently re-solving.
   const basket = data.diets[style].filter(
-    (f) => !f.contains.some((c) => avoid.includes(c))
+    (f) => !f.contains.some((c) => avoid.includes(c)) && !excluded.has(f.name)
   );
   const cats = groupByCat(basket);
   const dayScale = planDays / 7;
@@ -111,12 +116,15 @@ export function solveFlex(targets, diet, data = defaultData, edits = {}) {
   const avoid = Array.isArray(diet.avoid) ? diet.avoid : [];
   const planDays = diet.planDays || 7;
   const removed = new Set(edits.removedThisWeek || []);
+  const excluded = new Set(edits.excluded || []);
   const locked = edits.locked || {};
   const dayScale = planDays / 7;
   const target = weeklyTarget(targets, planDays);
 
+  // Excluded ("for good") foods leave the pool entirely — so they're never
+  // flexed into the solve and never surface as a re-add suggestion below.
   const fullBasket = data.diets[style].filter(
-    (f) => !f.contains.some((c) => avoid.includes(c))
+    (f) => !f.contains.some((c) => avoid.includes(c)) && !excluded.has(f.name)
   );
   // Unconstrained reference factors — the cap is relative to Coreon's original pick.
   const baseFactors = computeFactors(groupByCat(fullBasket), target, dayScale);
