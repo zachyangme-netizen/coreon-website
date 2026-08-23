@@ -1088,23 +1088,41 @@ function renderAIUsageLine() {
 
 const DEFAULT_AI_SUB = "A more varied list — still scaled to your exact targets.";
 
-// Reflect the current source (standard vs AI) in the control.
+// Reflect the current source (standard vs AI vs signed-out) in the control.
+// Signed-out users still SEE the control — as a "Log in to use AI" teaser — so
+// they discover the feature instead of it being hidden.
 function updateAIControl(useAI) {
   if (!haulAIEl) return;
-  haulAIEl.hidden = !(haulSignedIn || useAI);
+  const locked = !haulSignedIn && !useAI; // signed out with no AI basket in play
+  haulAIEl.hidden = false; // always shown on the result step
+  haulAIEl.classList.toggle("haul-ai-locked", locked);
   if (haulAIBadge) haulAIBadge.hidden = !useAI;
   if (haulAIRevert) haulAIRevert.hidden = !useAI;
   if (haulAIBtn) {
-    haulAIBtn.textContent = useAI ? "✨ Regenerate" : "✨ Generate with AI";
-    haulAIBtn.disabled = !haulSignedIn;
+    haulAIBtn.textContent = locked ? "🔒 Log in to use AI" : useAI ? "✨ Regenerate" : "✨ Generate with AI";
+    haulAIBtn.disabled = false; // when locked, the click opens sign-in instead
   }
   if (haulAISub && haulAIBtn && !haulAIBtn.classList.contains("is-loading")) {
-    haulAISub.textContent = useAI
-      ? "AI-picked basket, scaled to your targets. Edit or regenerate anytime."
-      : DEFAULT_AI_SUB;
+    haulAISub.textContent = locked
+      ? "Log in to generate a smarter, AI-picked list — still scaled to your targets."
+      : useAI
+        ? "AI-picked basket, scaled to your targets. Edit or regenerate anytime."
+        : DEFAULT_AI_SUB;
     haulAISub.classList.remove("haul-ai-error");
   }
   renderAIUsageLine();
+}
+
+// Open the nav sign-in flow (reveals its email form) and bring it into view.
+function openSignIn() {
+  const trigger = document.querySelector('.nav-auth [data-act="open"]');
+  if (trigger) {
+    trigger.click(); // swaps the "Sign in" button for the email form
+    document.querySelector(".nav-auth")?.scrollIntoView({ block: "center", behavior: "smooth" });
+    setTimeout(() => document.querySelector(".nav-auth input")?.focus(), 60);
+  } else {
+    setAIStatus('Use "Sign in" at the top to log in, then generate.', true);
+  }
 }
 
 function setAIStatus(msg, isError = false) {
@@ -1117,7 +1135,7 @@ async function generateAIHaul() {
   if (!haulAIBtn || !state.goal) return;
   const session = await getSession();
   if (!session) {
-    setAIStatus("Sign in above to generate an AI haul.", true);
+    openSignIn(); // signed out — send them to log in instead of erroring
     return;
   }
 
@@ -1178,7 +1196,12 @@ async function generateAIHaul() {
   }
 }
 
-if (haulAIBtn) haulAIBtn.addEventListener("click", generateAIHaul);
+if (haulAIBtn) {
+  haulAIBtn.addEventListener("click", () => {
+    if (!haulSignedIn) return openSignIn(); // "🔒 Log in to use AI" → open sign-in
+    generateAIHaul();
+  });
+}
 if (haulAIRevert) {
   haulAIRevert.addEventListener("click", () => {
     delete state.haulAI;
